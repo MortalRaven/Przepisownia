@@ -37,6 +37,6 @@ data class MeasurementUnits(
 
 data class IngredientInput(
     var name: String = "",
-    var amount: String = "",
+    var quantity: String = "",
     var unit: String = ""
 )

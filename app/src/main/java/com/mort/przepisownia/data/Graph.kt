@@ -10,18 +10,23 @@ object Graph {
     lateinit var database: RecipeDatabase
 
     val recipeRepository by lazy {
-        RecipeRepository (recipeDao = database.recipeDao())
+        RecipeRepository(
+            recipeDao = database.recipeDao(),
+            ingredientsDao = database.ingredientDao(),
+            stepsDao = database.stepDao()
+        )
     }
 
     val ingredientRepository by lazy {
-        IngredientRepository (ingredientDao = database.ingredientDao())
+        IngredientRepository(ingredientDao = database.ingredientDao())
     }
 
     val stepRepository by lazy {
-        StepRepository (stepDao = database.stepDao())
+        StepRepository(stepDao = database.stepDao())
     }
 
     fun provide(context: Context) {
-        database = Room.databaseBuilder(context, RecipeDatabase::class.java, "recipeList.db").build()
+        database =
+            Room.databaseBuilder(context, RecipeDatabase::class.java, "recipeList.db").build()
     }
 }

@@ -10,6 +10,10 @@ class IngredientRepository (private val ingredientDao: IngredientDao) {
         ingredientDao.addIngredient(ingredient)
     }
 
+    suspend fun addIngredients(ingredients: List<Ingredient>){
+        ingredientDao.addIngredients(ingredients)
+    }
+
     fun getIngredients(): Flow<List<Ingredient>> = ingredientDao.getAllIngredients()
 
     fun getRecipeIngredients(recipeId: Long): Flow<List<Ingredient>> {

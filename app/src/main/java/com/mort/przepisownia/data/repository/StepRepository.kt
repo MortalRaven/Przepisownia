@@ -10,6 +10,10 @@ class StepRepository(private val stepDao: StepDao) {
         stepDao.addStep(step)
     }
 
+    suspend fun addSteps(steps: List<RecipeStep>) {
+        stepDao.addSteps(steps)
+    }
+
     fun getRecipeSteps(recipeId: Long): Flow<List<RecipeStep>> {
         return stepDao.getRecipeSteps(recipeId)
     }

@@ -1,51 +1,45 @@
 package com.mort.przepisownia
 
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBarView(
     title: String,
-    onBackNavClick: () -> Unit = {}
+    onBackNavClick: () -> Unit = {},
 ) {
-    val navIcon: (@Composable () -> Unit)? =
-        if (!title.contains("Przepisownia")) {
-            {
-                IconButton(onClick = { onBackNavClick() }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        tint = Color.White,
-                        contentDescription = null
-                    )
-                }
+    val navIcon: (@Composable () -> Unit) =
+        {
+            IconButton(onClick = { onBackNavClick() }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = null
+                )
             }
-        } else {
-            null
         }
 
     TopAppBar(
+        modifier = Modifier.shadow(elevation = 3.dp),
         title = {
             Text(
                 text = title,
-                color = colorResource(R.color.white),
-                modifier = Modifier
-                    .padding(start = 4.dp)
-                    .heightIn(max = 24.dp)
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(start = 4.dp)
             )
         },
-        elevation = 3.dp,
-        backgroundColor = colorResource(R.color.main_theme),
         navigationIcon = navIcon
     )
 }

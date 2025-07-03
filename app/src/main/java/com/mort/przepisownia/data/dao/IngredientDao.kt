@@ -15,6 +15,9 @@ abstract class IngredientDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun addIngredient(ingredientEntity: Ingredient)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    abstract suspend fun addIngredients(ingredients: List<Ingredient>)
+
     @Query("SELECT * FROM 'ingredients'")
     abstract fun getAllIngredients(): Flow<List<Ingredient>>
 

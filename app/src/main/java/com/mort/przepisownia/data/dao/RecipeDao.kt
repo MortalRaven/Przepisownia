@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.Flow
 abstract class RecipeDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    abstract suspend fun addRecipe(recipeEntity: Recipe)
+    abstract suspend fun addRecipe(recipeEntity: Recipe): Long
 
     @Query("SELECT * FROM 'recipes'")
     abstract fun getAllRecipes(): Flow<List<Recipe>>

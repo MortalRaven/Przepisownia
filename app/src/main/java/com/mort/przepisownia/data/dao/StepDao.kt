@@ -13,7 +13,10 @@ import kotlinx.coroutines.flow.Flow
 abstract class StepDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    abstract suspend fun addStep(stepEntity: RecipeStep)
+    abstract suspend fun addStep(step: RecipeStep)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    abstract suspend fun addSteps(steps: List<RecipeStep>)
 
     @Query("SELECT * FROM 'recipes_steps' WHERE recipeId=:recipeId")
     abstract fun getRecipeSteps(recipeId: Long): Flow<List<RecipeStep>>

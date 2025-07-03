@@ -60,6 +60,8 @@ dependencies {
     implementation("androidx.room:room-ktx:$room")
     kapt("androidx.room:room-compiler:$room")
 
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
     implementation("androidx.navigation:navigation-compose:$nav_version")
     implementation("androidx.core:core-ktx:1.7.0")
     implementation("androidx.compose.ui:ui:$compose_version")

@@ -3,25 +3,24 @@ package com.mort.przepisownia
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -34,29 +33,27 @@ fun HomeView(
     navController: NavController,
 ) {
 
-    val scaffoldState = rememberScaffoldState()
-    val coroutineScope = rememberCoroutineScope()
-
     Scaffold(
-        scaffoldState = scaffoldState,
-        topBar = {
-            AppBarView(title = "Przepisownia")
-        },
-        backgroundColor = colorResource(R.color.background_main)
     ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
-                .padding(top = 24.dp, start = 24.dp, end = 24.dp),
+                .padding(it),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+
+            item { Spacer(modifier = Modifier.height(24.dp)) }
+
             val itemsList = MenuList.menuList
             items(itemsList) { menuItem ->
                 MenuItemCard(menuItem = menuItem) {
                     val screen = menuItem.screen
+                    if (screen == Screen.AddEditScreen) {
+                        navController.navigate(screen.route + "/0L")
+                    } else {
                     navController.navigate(screen.route)
+                    }
                 }
             }
         }
@@ -72,10 +69,10 @@ fun MenuItemCard(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 60.dp, max = 100.dp)
-            .clickable { onClick() },
+            .padding(start = 24.dp, end = 24.dp)
+            .clickable { onClick() }
+            .shadow(10.dp),
         shape = RoundedCornerShape(16.dp),
-        elevation = 10.dp,
-        backgroundColor = colorResource(R.color.main_theme)
     ) {
         Row(
             modifier = Modifier
@@ -86,7 +83,6 @@ fun MenuItemCard(
             Text(
                 modifier = Modifier.weight(3f),
                 text = menuItem.title,
-                color = Color.White,
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 18.sp,
                 textAlign = TextAlign.Start
@@ -97,7 +93,6 @@ fun MenuItemCard(
                     .weight(1f),
                 painter = painterResource(menuItem.icon),
                 contentDescription = "",
-                tint = Color.White
             )
         }
     }

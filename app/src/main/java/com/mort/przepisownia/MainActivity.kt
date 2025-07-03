@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         //enableEdgeToEdge()
         setContent {
-            PrzepisowniaTheme {
+            PrzepisowniaTheme(dynamicColor = false) {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
                     Navigation()
                 }
