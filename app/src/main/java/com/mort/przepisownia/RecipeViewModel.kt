@@ -50,7 +50,7 @@ class RecipeViewModel(
     fun addFullRecipe(
         recipe: Recipe,
         ingredients: List<IngredientInput>,
-        steps: List<String>,
+        steps: List<String>
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             recipeRepository.addFullRecipe(recipe, ingredients, steps)
@@ -61,9 +61,13 @@ class RecipeViewModel(
         return recipeRepository.getRecipeByID(id)
     }
 
-    fun updateRecipe(recipe: Recipe) {
+    fun updateRecipe(
+        recipe: Recipe,
+        ingredients: List<IngredientInput>,
+        steps: List<String>
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
-            recipeRepository.updateRecipe(recipe)
+            recipeRepository.updateRecipe(recipe, ingredients, steps)
         }
     }
 

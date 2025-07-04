@@ -1,6 +1,5 @@
 package com.mort.przepisownia.data.repository
 
-import android.util.Log
 import com.mort.przepisownia.data.dao.IngredientDao
 import com.mort.przepisownia.data.dao.RecipeDao
 import com.mort.przepisownia.data.dao.StepDao
@@ -24,9 +23,8 @@ class RecipeRepository(
     suspend fun addFullRecipe(
         recipe: Recipe,
         ingredientsInput: List<IngredientInput>,
-        stepsInput: List<String>,
+        stepsInput: List<String>
     ) {
-        //Log.d("DEBUG", "addFullRecipe wywołane z: $recipe, $ingredientsInput, $stepsInput")
         val recipeId = recipeDao.addRecipe(recipe)
         val ingredientsWithId = ingredientsInput.map {
             Ingredient(
@@ -57,8 +55,33 @@ class RecipeRepository(
     fun getRecipeDetails(recipeId: Long): Flow<RecipeWithDetails> =
         recipeDao.getRecipeDetails(recipeId)
 
-    suspend fun updateRecipe(recipe: Recipe) {
+    suspend fun updateRecipe(
+        recipe: Recipe,
+        ingredientsInput: List<IngredientInput>,
+        stepsInput: List<String>
+    ) {
         recipeDao.updateRecipe(recipe)
+        ingredientsDao.deleteIngredientsByRecipeId(recipe.id)
+        ingredientsDao.addIngredients(
+            ingredientsInput.map {
+                Ingredient(
+                    recipeId = recipe.id,
+                    name = it.name,
+                    quantity = it.quantity,
+                    unit = it.unit
+                )
+            }
+        )
+        stepsDao.deleteStepsByRecipeId(recipe.id)
+        stepsDao.addSteps(
+            stepsInput.mapIndexed { index, step ->
+                RecipeStep(
+                    recipeId = recipe.id,
+                    stepNumber = index + 1,
+                    description = step
+                )
+            }
+        )
     }
 
     suspend fun updateRecipeFav(id: Long) {

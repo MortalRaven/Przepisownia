@@ -16,6 +16,7 @@ fun saveImageToInternalStorage(context: Context, uri: Uri): String? {
             val source = ImageDecoder.createSource(context.contentResolver, uri)
             ImageDecoder.decodeBitmap(source)
         } else {
+            @Suppress("DEPRECATION")
             android.provider.MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
         }
 

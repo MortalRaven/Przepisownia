@@ -18,7 +18,7 @@ abstract class StepDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun addSteps(steps: List<RecipeStep>)
 
-    @Query("SELECT * FROM 'recipes_steps' WHERE recipeId=:recipeId")
+    @Query("SELECT * FROM 'recipes_steps' WHERE recipeId = :recipeId")
     abstract fun getRecipeSteps(recipeId: Long): Flow<List<RecipeStep>>
 
     @Update
@@ -26,4 +26,7 @@ abstract class StepDao {
 
     @Delete
     abstract suspend fun deleteStep(stepEntity: RecipeStep)
+
+    @Query("DELETE FROM 'recipes_steps' WHERE recipeId = :recipeId")
+    abstract suspend fun deleteStepsByRecipeId(recipeId: Long)
 }

@@ -1,8 +1,10 @@
 package com.mort.przepisownia
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,6 +21,7 @@ import androidx.compose.ui.unit.dp
 fun AppBarView(
     title: String,
     onBackNavClick: () -> Unit = {},
+    onEditClick: (() -> Unit)? = null
 ) {
     val navIcon: (@Composable () -> Unit) =
         {
@@ -40,6 +43,16 @@ fun AppBarView(
                 modifier = Modifier.padding(start = 4.dp)
             )
         },
-        navigationIcon = navIcon
+        navigationIcon = navIcon,
+        actions = {
+            onEditClick?.let {
+                IconButton(onClick = it) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = null
+                    )
+                }
+            }
+        }
     )
 }

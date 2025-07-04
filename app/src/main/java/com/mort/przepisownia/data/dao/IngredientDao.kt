@@ -21,7 +21,7 @@ abstract class IngredientDao {
     @Query("SELECT * FROM 'ingredients'")
     abstract fun getAllIngredients(): Flow<List<Ingredient>>
 
-    @Query("SELECT * FROM 'ingredients' WHERE recipeId=:recipeId")
+    @Query("SELECT * FROM 'ingredients' WHERE recipeId = :recipeId")
     abstract fun getRecipeIngredients(recipeId: Long): Flow<List<Ingredient>>
 
     @Update
@@ -30,4 +30,6 @@ abstract class IngredientDao {
     @Delete
     abstract suspend fun deleteIngredient(ingredientEntity: Ingredient)
 
+    @Query("DELETE FROM 'ingredients' WHERE recipeId = :recipeId")
+    abstract suspend fun deleteIngredientsByRecipeId(recipeId: Long)
 }

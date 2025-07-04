@@ -54,9 +54,10 @@ fun RecipeListView(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            AppBarView(title = "Przepisy") {
-                navController.navigateUp()
-            }
+            AppBarView(
+                title = "Przepisy",
+                onBackNavClick = { navController.navigateUp() }
+            )
         },
         //TODO Może lepiej jednak zrobić dodawanie na AppBarze
         floatingActionButton = {

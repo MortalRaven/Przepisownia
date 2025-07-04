@@ -105,6 +105,14 @@ fun AddEditRecipeView(
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     val coroutineScope = rememberCoroutineScope()
 
+    //Przepis, składniki, kroki
+    val ingredients = remember { mutableStateListOf<IngredientInput>() }
+    val newIngredient = remember { mutableStateOf(IngredientInput()) }
+    val steps = remember { mutableStateListOf<String>() }
+    val newStep = remember { mutableStateOf("") }
+
+    val unitList = listOf("g", "dag", "kg", "ml", "l", "łyżeczka", "łyżka", "szklanka", "szt.")
+
     if (id != 0L) {
         val recipeDetails = viewModel.getRecipeDetails(id).collectAsState(
             initial = RecipeWithDetails(
@@ -121,6 +129,14 @@ fun AddEditRecipeView(
         viewModel.recipeLinkState = recipeDetails.value.recipe.link
         viewModel.recipeIngredientsState = recipeDetails.value.ingredients
         viewModel.recipeStepsState = recipeDetails.value.steps
+
+        ingredients.clear()
+        ingredients.addAll(recipeDetails.value.ingredients.map {
+            IngredientInput(name = it.name, quantity = it.quantity, unit = it.unit)
+        })
+
+        steps.clear()
+        steps.addAll(recipeDetails.value.steps.map { it.description })
     } else {
         viewModel.recipeNameState = ""
         viewModel.recipeDescState = ""
@@ -131,22 +147,15 @@ fun AddEditRecipeView(
         viewModel.recipeStepsState = listOf()
     }
 
-
-    val ingredients = remember { mutableStateListOf<IngredientInput>() }
-    val newIngredient = remember { mutableStateOf(IngredientInput()) }
-    val steps = remember { mutableStateListOf<String>() }
-    val newStep = remember { mutableStateOf("") }
-
-    val unitList = listOf("g", "dag", "kg", "ml", "l", "łyżeczka", "łyżka", "szklanka", "szt.")
-
     Scaffold(
         //Chowanie klawiatury - usunięcie focusu przy kliknięciu na ekranie
         modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            AppBarView(title = "Edycja przepisu") {
-                navController.navigateUp()
-            }
+            AppBarView(
+                title = "Edycja przepisu",
+                onBackNavClick = { navController.navigateUp() }
+            )
         }
     ) { paddingValues ->
         LazyColumn(
@@ -508,7 +517,9 @@ fun AddEditRecipeView(
                                         isFavourite = viewModel.recipeFavState,
                                         imagePath = viewModel.recipeImageState,
                                         link = viewModel.recipeLinkState.trim()
-                                    )
+                                    ),
+                                    ingredients = ingredients.toList(),
+                                    steps = steps.toList()
                                 )
                                 snackMessage.value = "Przepis został zaktualizowany."
                             } else {
@@ -525,10 +536,10 @@ fun AddEditRecipeView(
                                     steps = steps.toList()
                                 )
                                 snackMessage.value = "Przepis został dodany."
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(snackMessage.value)
-                                    navController.navigateUp()
-                                }
+                            }
+                            scope.launch {
+                                snackbarHostState.showSnackbar(snackMessage.value)
+                                navController.navigateUp()
                             }
                         } else {
                             //Info o konieczności wypełnienia pól

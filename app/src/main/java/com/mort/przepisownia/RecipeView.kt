@@ -81,9 +81,14 @@ fun RecipeView(
 
     Scaffold(
         topBar = {
-            AppBarView(title = recipe.value.recipe.name) {
-                navController.navigateUp()
-            }
+            AppBarView(
+                title = recipe.value.recipe.name,
+                onBackNavClick = { navController.navigateUp() },
+                onEditClick = {
+                    val recipeId = recipe.value.recipe.id
+                    navController.navigate(Screen.AddEditScreen.route + "/$recipeId")
+                }
+            )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
