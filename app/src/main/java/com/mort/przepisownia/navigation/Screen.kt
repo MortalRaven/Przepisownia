@@ -1,4 +1,4 @@
-package com.mort.przepisownia
+package com.mort.przepisownia.navigation
 
 sealed class Screen(val route: String) {
     object HomeScreen: Screen("home_screen")

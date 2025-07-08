@@ -1,4 +1,4 @@
-package com.mort.przepisownia
+package com.mort.przepisownia.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +27,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.mort.przepisownia.R
+import com.mort.przepisownia.navigation.Screen
 
 @Composable
 fun HomeView(

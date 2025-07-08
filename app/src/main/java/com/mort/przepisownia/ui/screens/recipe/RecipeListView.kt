@@ -1,4 +1,4 @@
-package com.mort.przepisownia
+package com.mort.przepisownia.ui.screens.recipe
 
 import android.content.Context
 import androidx.compose.foundation.Image
@@ -24,9 +24,16 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -38,11 +45,15 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.LineBreak
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.mort.przepisownia.ui.common.AppBarView
+import com.mort.przepisownia.R
+import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.data.entities.Recipe
 import java.io.File
 
@@ -51,15 +62,41 @@ fun RecipeListView(
     navController: NavController,
     viewModel: RecipeViewModel
 ) {
+    val pendingRecipe = viewModel.pendingDeletedRecipe.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(pendingRecipe) {
+        if (pendingRecipe.value != null) {
+            val result = snackbarHostState.showSnackbar(
+                message = "Przepis został usunięty.",
+                actionLabel = "Cofnij",
+                duration = SnackbarDuration.Short
+            )
+
+            when (result) {
+                SnackbarResult.ActionPerformed -> {
+                    viewModel.clearPendingDeletedRecipe()
+                }
+                SnackbarResult.Dismissed -> {
+                    viewModel.deleteRecipe(pendingRecipe.value!!)
+                    viewModel.clearPendingDeletedRecipe()
+                }
+            }
+        }
+    }
+
+    val allRecipes = viewModel.getAllRecipes.collectAsState(initial = listOf())
+    val recipeList = allRecipes.value.filter { it.id != pendingRecipe.value?.id }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             AppBarView(
                 title = "Przepisy",
-                onBackNavClick = { navController.navigateUp() }
+                onBackNavClick = { navController.navigate(Screen.HomeScreen.route) }
             )
         },
-        //TODO Może lepiej jednak zrobić dodawanie na AppBarze
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(
                 modifier = Modifier.padding(all = 20.dp),
@@ -70,20 +107,31 @@ fun RecipeListView(
             }
         }
     ) {
-        //val recipeList = DummyRecipes.recipeList
-        val recipeList = viewModel.getAllRecipes.collectAsState(initial = listOf())
-
-        //Siatka zawierająca przepisy
-        LazyVerticalGrid(
-            modifier = Modifier.fillMaxSize().padding(it).padding(top = 16.dp, bottom = 16.dp),
-            columns = GridCells.Fixed(2),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(recipeList.value, key = {recipe -> recipe.id}
-            ) {recipe ->
-                RecipeItem(context = LocalContext.current, recipe = recipe) {
-                    val id = recipe.id
-                    navController.navigate(Screen.RecipeScreen.route + "/$id")
+        if (recipeList.isEmpty()) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(it),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "\uD83C\uDF72 \nNie masz jeszcze żadnych przepisów.\nZacznij swoją przygodę kulinarną od dodania pierwszego!",
+                    fontSize = 24.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+        } else {
+            //Siatka zawierająca przepisy
+            LazyVerticalGrid(
+                modifier = Modifier.fillMaxSize().padding(it).padding(top = 16.dp, bottom = 16.dp),
+                columns = GridCells.Fixed(2),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(recipeList, key = { recipe -> recipe.id }
+                ) { recipe ->
+                    RecipeItem(context = LocalContext.current, recipe = recipe) {
+                        val id = recipe.id
+                        navController.navigate(Screen.RecipeScreen.route + "/$id")
+                    }
                 }
             }
         }
@@ -93,10 +141,9 @@ fun RecipeListView(
 //Szablon karty z informacją o przepisie
 @Composable
 fun RecipeItem(context: Context, recipe: Recipe, onClick: () -> Unit) {
-    // TODO Pobawić się jeszcze rozmiarami kart
     Card(
         modifier = Modifier.fillMaxWidth()
-            .height(240.dp)
+            .height(260.dp)
             .padding(top = 8.dp, start = 8.dp, end = 8.dp)
             .clickable { onClick() }
             .shadow(10.dp)

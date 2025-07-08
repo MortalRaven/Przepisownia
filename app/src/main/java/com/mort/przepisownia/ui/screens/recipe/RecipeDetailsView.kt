@@ -1,4 +1,4 @@
-package com.mort.przepisownia
+package com.mort.przepisownia.ui.screens.recipe
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -45,13 +45,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.mort.przepisownia.ui.common.AppBarView
+import com.mort.przepisownia.R
+import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.data.entities.Recipe
 import com.mort.przepisownia.data.entities.RecipeWithDetails
+import com.mort.przepisownia.ui.common.MenuDropdownItem
+import com.mort.przepisownia.ui.screens.recipe.components.DeleteRecipeDialog
 import kotlinx.coroutines.launch
 import java.io.File
 
 @Composable
-fun RecipeView(
+fun RecipeDetailsView(
     id: Long,
     viewModel: RecipeViewModel,
     navController: NavController,
@@ -66,6 +71,8 @@ fun RecipeView(
     )
     viewModel.recipeFavState = recipe.value.recipe.isFavourite
 
+    val recipeId = recipe.value.recipe.id
+
     val ingredientsCheckState = remember { mutableStateMapOf<Long, Boolean>() }
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -79,15 +86,37 @@ fun RecipeView(
         }
     }
 
+    val showDeleteRecipeDialog = remember { mutableStateOf(false) }
+
+    if (showDeleteRecipeDialog.value) {
+        DeleteRecipeDialog(
+            recipe = recipe.value.recipe,
+            onDismiss = { showDeleteRecipeDialog.value = false },
+            onConfirm = {
+                viewModel.setPendingDeletedRecipe(recipe.value.recipe)
+                showDeleteRecipeDialog.value = false
+                navController.navigate(Screen.RecipesScreen.route)
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             AppBarView(
                 title = recipe.value.recipe.name,
                 onBackNavClick = { navController.navigateUp() },
-                onEditClick = {
-                    val recipeId = recipe.value.recipe.id
-                    navController.navigate(Screen.AddEditScreen.route + "/$recipeId")
-                }
+                dropdownMenuItems = listOf(
+                    MenuDropdownItem(
+                        text = "Edytuj",
+                        action = { navController.navigate(Screen.AddEditScreen.route + "/$recipeId") }
+                    ),
+                    MenuDropdownItem(
+                        text = "Usuń",
+                        action = {
+                            showDeleteRecipeDialog.value = !showDeleteRecipeDialog.value
+                        }
+                    )
+                )
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },

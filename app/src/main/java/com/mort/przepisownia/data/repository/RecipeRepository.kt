@@ -92,5 +92,7 @@ class RecipeRepository(
 
     suspend fun deleteRecipe(recipe: Recipe) {
         recipeDao.deleteRecipe(recipe)
+        ingredientsDao.deleteIngredientsByRecipeId(recipe.id)
+        stepsDao.deleteStepsByRecipeId(recipe.id)
     }
 }

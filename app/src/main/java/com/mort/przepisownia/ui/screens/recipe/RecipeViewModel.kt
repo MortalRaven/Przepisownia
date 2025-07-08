@@ -1,4 +1,4 @@
-package com.mort.przepisownia
+package com.mort.przepisownia.ui.screens.recipe
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,6 +14,8 @@ import com.mort.przepisownia.data.entities.RecipeWithDetails
 import com.mort.przepisownia.data.repository.RecipeRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class RecipeViewModel(
@@ -27,6 +29,9 @@ class RecipeViewModel(
     var recipeLinkState by mutableStateOf("")
     var recipeIngredientsState by mutableStateOf(listOf<Ingredient>())
     var recipeStepsState by mutableStateOf(listOf<RecipeStep>())
+
+    private val _pendingDeletedRecipe = MutableStateFlow<Recipe?>(null)
+    val pendingDeletedRecipe: StateFlow<Recipe?> = _pendingDeletedRecipe
 
     //Funkcje dot. przepisów
     lateinit var getAllRecipes: Flow<List<Recipe>>
@@ -75,6 +80,14 @@ class RecipeViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             recipeRepository.updateRecipeFav(id)
         }
+    }
+
+    fun setPendingDeletedRecipe(recipe: Recipe) {
+        _pendingDeletedRecipe.value = recipe
+    }
+
+    fun clearPendingDeletedRecipe() {
+        _pendingDeletedRecipe.value = null
     }
 
     fun deleteRecipe(recipe: Recipe) {

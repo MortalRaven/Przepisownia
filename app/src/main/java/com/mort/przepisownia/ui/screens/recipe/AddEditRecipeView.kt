@@ -1,6 +1,5 @@
-package com.mort.przepisownia
+package com.mort.przepisownia.ui.screens.recipe
 
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,6 +37,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -63,9 +63,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.mort.przepisownia.ui.common.AppBarView
 import com.mort.przepisownia.data.entities.IngredientInput
 import com.mort.przepisownia.data.entities.Recipe
 import com.mort.przepisownia.data.entities.RecipeWithDetails
+import com.mort.przepisownia.navigation.Screen
+import com.mort.przepisownia.ui.screens.recipe.components.EditIngredientDialog
+import com.mort.przepisownia.ui.screens.recipe.components.EditStepDialog
 import com.mort.przepisownia.utils.saveImageToInternalStorage
 import kotlinx.coroutines.launch
 import java.io.File
@@ -83,6 +87,7 @@ fun AddEditRecipeView(
     navController: NavController,
 ) {
     val context = LocalContext.current
+    //Obsługa zdjęć
     val photoPickerLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia()
         ) { uri ->
@@ -113,15 +118,25 @@ fun AddEditRecipeView(
 
     val unitList = listOf("g", "dag", "kg", "ml", "l", "łyżeczka", "łyżka", "szklanka", "szt.")
 
-    if (id != 0L) {
-        val recipeDetails = viewModel.getRecipeDetails(id).collectAsState(
-            initial = RecipeWithDetails(
-                recipe = Recipe(0L, "", "", false, "", ""),
-                ingredients = listOf(),
-                steps = listOf()
-            )
+    val recipeDetails = viewModel.getRecipeDetails(id).collectAsState(
+        initial = RecipeWithDetails(
+            recipe = Recipe(0L, "", "", false, "", ""),
+            ingredients = listOf(),
+            steps = listOf()
         )
-        viewModel.recipeNameState = recipeDetails.value.recipe.name
+    )
+
+    val initialized = remember { mutableStateOf(false) }
+
+    if (id == 0L) {
+        viewModel.recipeNameState = ""
+        viewModel.recipeDescState = ""
+        viewModel.recipeFavState = false
+        viewModel.recipeImageState = ""
+        viewModel.recipeLinkState = ""
+        viewModel.recipeIngredientsState = listOf()
+        viewModel.recipeStepsState = listOf()
+    } else if (!initialized.value && recipeDetails.value.recipe.id != 0L) {
         viewModel.recipeNameState = recipeDetails.value.recipe.name
         viewModel.recipeDescState = recipeDetails.value.recipe.desc
         viewModel.recipeFavState = recipeDetails.value.recipe.isFavourite
@@ -137,14 +152,36 @@ fun AddEditRecipeView(
 
         steps.clear()
         steps.addAll(recipeDetails.value.steps.map { it.description })
-    } else {
-        viewModel.recipeNameState = ""
-        viewModel.recipeDescState = ""
-        viewModel.recipeFavState = false
-        viewModel.recipeImageState = ""
-        viewModel.recipeLinkState = ""
-        viewModel.recipeIngredientsState = listOf()
-        viewModel.recipeStepsState = listOf()
+
+        initialized.value = true
+    }
+
+    //Okna edycji składnika i kroku
+    val showIngredientEditDialog = remember { mutableStateOf(false) }
+    val ingredientToEditIndex = remember { mutableStateOf(-1) }
+    val showStepEditDialog = remember { mutableStateOf(false) }
+    val stepToEditIndex = remember { mutableStateOf(-1) }
+
+    if (showIngredientEditDialog.value && ingredientToEditIndex.value in ingredients.indices) {
+        EditIngredientDialog(
+            ingredient = ingredients[ingredientToEditIndex.value],
+            onDismiss = { showIngredientEditDialog.value = false },
+            onConfirm = { updated ->
+                ingredients[ingredientToEditIndex.value] = updated
+                showIngredientEditDialog.value = false
+            }
+        )
+    }
+
+    if(showStepEditDialog.value && stepToEditIndex.value in steps.indices) {
+        EditStepDialog(
+            step = steps[stepToEditIndex.value],
+            onDismiss =  { showStepEditDialog.value = false },
+            onConfirm = { updated ->
+                steps[stepToEditIndex.value] = updated
+                showStepEditDialog.value = false
+            }
+        )
     }
 
     Scaffold(
@@ -234,7 +271,6 @@ fun AddEditRecipeView(
             }
 
 //Dodawanie składników
-//Tabela z dodanymi składnikami
             item {
                 Card {
                     Column(
@@ -254,11 +290,10 @@ fun AddEditRecipeView(
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
-
+//Tabela z dodanymi składnikami
                             ingredients.forEachIndexed { index, ingredient ->
                                 Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
+                                    modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
@@ -274,12 +309,10 @@ fun AddEditRecipeView(
                                         text = ingredient.name,
                                         fontSize = 16.sp
                                     )
-//TODO Dodanie edycji składnika
+//Edycja składnika
                                     IconButton(onClick = {
-                                        Log.i(
-                                            "Infosek",
-                                            "Edytowanie składnika"
-                                        )
+                                        ingredientToEditIndex.value = index
+                                        showIngredientEditDialog.value = !showIngredientEditDialog.value
                                     }) {
                                         Icon(
                                             imageVector = Icons.Default.Edit,
@@ -287,7 +320,7 @@ fun AddEditRecipeView(
                                             tint = Color.Gray
                                         )
                                     }
-
+//Usuwanie składnika
                                     IconButton(onClick = {
                                         viewModel.removeIngredient(index)
                                     }) {
@@ -416,7 +449,7 @@ fun AddEditRecipeView(
                             horizontalAlignment = Alignment.Start
                         ) {
                             Text(text = "Przepis", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-
+//Lista kroków
                             steps.forEachIndexed { index, value ->
                                 if (index != 0) {
                                     HorizontalDivider(thickness = 2.dp)
@@ -441,7 +474,10 @@ fun AddEditRecipeView(
                                         fontSize = 16.sp
                                     )
 
-                                    IconButton(onClick = {}) {
+                                    IconButton(onClick = {
+                                        stepToEditIndex.value = index
+                                        showStepEditDialog.value = !showStepEditDialog.value
+                                    }) {
                                         Icon(
                                             imageVector = Icons.Default.Edit,
                                             contentDescription = "Edytuj krok",
@@ -538,14 +574,20 @@ fun AddEditRecipeView(
                                 snackMessage.value = "Przepis został dodany."
                             }
                             scope.launch {
-                                snackbarHostState.showSnackbar(snackMessage.value)
-                                navController.navigateUp()
+                                snackbarHostState.showSnackbar(
+                                    message = snackMessage.value,
+                                    duration = SnackbarDuration.Short
+                                )
+                                navController.navigate(Screen.RecipesScreen.route)
                             }
                         } else {
                             //Info o konieczności wypełnienia pól
                             snackMessage.value = "Wypełnij pola."
                             scope.launch {
-                                snackbarHostState.showSnackbar(snackMessage.value)
+                                snackbarHostState.showSnackbar(
+                                    message = snackMessage.value,
+                                    duration = SnackbarDuration.Short
+                                )
                             }
                         }
                     }
