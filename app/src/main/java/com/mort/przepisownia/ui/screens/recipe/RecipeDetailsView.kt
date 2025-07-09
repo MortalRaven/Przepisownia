@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -130,7 +131,6 @@ fun RecipeDetailsView(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 //Zdjęcie przepisu
-            //TODO Fotka przepisu/placeholder
             item {
                 Box(
                     contentAlignment = Alignment.Center
@@ -289,19 +289,19 @@ fun RecipeDetailsView(
                     )
 
                     recipe.value.steps.forEachIndexed { index, step ->
-                        Row(
+                        Column(
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text(
-                                text = "${index + 1}. ",
+                                text = "Krok ${index + 1}.",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                modifier = Modifier.weight(1f),
                                 text = step.description,
                                 fontSize = 14.sp
                             )
+                            Spacer(modifier = Modifier.height(10.dp))
                         }
                     }
                 }

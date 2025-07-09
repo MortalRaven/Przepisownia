@@ -16,10 +16,6 @@ class RecipeRepository(
     private val ingredientsDao: IngredientDao,
     private val stepsDao: StepDao,
 ) {
-    suspend fun addRecipe(recipe: Recipe) {
-        recipeDao.addRecipe(recipe)
-    }
-
     suspend fun addFullRecipe(
         recipe: Recipe,
         ingredientsInput: List<IngredientInput>,

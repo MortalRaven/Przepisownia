@@ -2,6 +2,7 @@ package com.mort.przepisownia.ui.screens.recipe.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -19,7 +20,7 @@ import com.mort.przepisownia.data.entities.IngredientInput
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditIngredientDialog(
+fun IngredientDialog(
     ingredient: IngredientInput,
     onDismiss: () -> Unit,
     onConfirm: (IngredientInput) -> Unit
@@ -90,4 +91,8 @@ fun EditIngredientDialog(
             }
         }
     )
+}
+
+enum class IngredientDialogMode {
+    ADD, EDIT
 }

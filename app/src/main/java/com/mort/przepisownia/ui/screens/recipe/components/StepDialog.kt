@@ -10,7 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 
 @Composable
-fun EditStepDialog(
+fun StepDialog(
     step: String,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
@@ -42,4 +42,8 @@ fun EditStepDialog(
             }
         }
     )
+}
+
+enum class StepDialogMode {
+    ADD, EDIT
 }

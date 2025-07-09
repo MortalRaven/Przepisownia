@@ -29,6 +29,7 @@ class RecipeViewModel(
     var recipeLinkState by mutableStateOf("")
     var recipeIngredientsState by mutableStateOf(listOf<Ingredient>())
     var recipeStepsState by mutableStateOf(listOf<RecipeStep>())
+    var isLoading by mutableStateOf(true)
 
     private val _pendingDeletedRecipe = MutableStateFlow<Recipe?>(null)
     val pendingDeletedRecipe: StateFlow<Recipe?> = _pendingDeletedRecipe
@@ -44,12 +45,6 @@ class RecipeViewModel(
 
     fun getRecipeDetails(recipeId: Long): Flow<RecipeWithDetails> {
         return recipeRepository.getRecipeDetails(recipeId)
-    }
-
-    fun addRecipe(recipe: Recipe) {
-        viewModelScope.launch(Dispatchers.IO) {
-            recipeRepository.addRecipe(recipe)
-        }
     }
 
     fun addFullRecipe(
@@ -104,32 +99,12 @@ class RecipeViewModel(
         recipeDescState = newString
     }
 
-    fun onRecipeFavChanged(isFav: Boolean) {
-        recipeFavState = isFav
-    }
-
-    fun onRecipeImageChanged(newString: String) {
-        recipeImageState = newString
-    }
-
     fun onRecipeLinkChanged(newString: String) {
         recipeLinkState = newString
     }
 
-//Funkcje dot. składników
-
-    fun addIngredient(ingredient: Ingredient) {
-        recipeIngredientsState = recipeIngredientsState + ingredient
-    }
-
     fun removeIngredient(index: Int) {
         recipeIngredientsState = recipeIngredientsState.toMutableList().also { it.removeAt(index) }
-    }
-
-
-    //Funkcje dot. kroków
-    fun addStep(step: RecipeStep) {
-        recipeStepsState = recipeStepsState + step
     }
 
     fun removeStep(index: Int) {

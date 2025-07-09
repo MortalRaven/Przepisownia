@@ -12,6 +12,7 @@ import com.mort.przepisownia.ui.screens.HomeView
 import com.mort.przepisownia.ui.screens.recipe.RecipeViewModel
 import com.mort.przepisownia.ui.screens.recipe.AddEditRecipeView
 import com.mort.przepisownia.ui.screens.recipe.RecipeDetailsView
+import com.mort.przepisownia.ui.screens.recipe.RecipeEditMode
 import com.mort.przepisownia.ui.screens.recipe.RecipeListView
 
 @Composable
@@ -62,6 +63,7 @@ fun Navigation(
             val id = if (entry.arguments != null) entry.arguments!!.getLong("id") else 0L
             AddEditRecipeView(
                 id = id,
+                mode = if (id == 0L) RecipeEditMode.ADD else RecipeEditMode.EDIT,
                 viewModel = viewModel,
                 navController = navController
             )
