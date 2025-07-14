@@ -2,6 +2,7 @@ package com.mort.przepisownia.ui.screens.recipe.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -12,9 +13,15 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.mort.przepisownia.data.entities.IngredientInput
 
@@ -32,20 +39,41 @@ fun IngredientDialog(
 
     val expanded = remember { mutableStateOf(false) }
 
+    val nameFocusRequester = remember { FocusRequester() }
+    val qtyFocusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+
+    LaunchedEffect(Unit) {
+        nameFocusRequester.requestFocus()
+    }
+
     AlertDialog(
         onDismissRequest = { onDismiss() },
         title = { Text("Edytuj składnik") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
+                    modifier = Modifier.focusRequester(nameFocusRequester),
                     value = name.value,
                     onValueChange = { name.value = it },
-                    label = { Text("Składnik") }
+                    label = { Text("Składnik") },
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(
+                        onNext = { qtyFocusRequester.requestFocus() }
+                    )
                 )
                 OutlinedTextField(
+                    modifier = Modifier.focusRequester(qtyFocusRequester),
                     value = quantity.value,
                     onValueChange = { quantity.value = it },
-                    label = { Text("Ilość") }
+                    label = { Text("Ilość") },
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next, keyboardType = KeyboardType.Number),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            focusManager.clearFocus()
+                            expanded.value = true
+                        }
+                    )
                 )
                 ExposedDropdownMenuBox(
                     expanded = expanded.value,

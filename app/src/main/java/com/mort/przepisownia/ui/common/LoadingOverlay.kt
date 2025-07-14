@@ -1,4 +1,4 @@
-package com.mort.przepisownia.ui.screens.recipe.components
+package com.mort.przepisownia.ui.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

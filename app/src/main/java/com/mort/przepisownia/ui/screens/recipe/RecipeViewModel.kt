@@ -3,19 +3,21 @@ package com.mort.przepisownia.ui.screens.recipe
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mort.przepisownia.data.Graph
-import com.mort.przepisownia.data.entities.Ingredient
 import com.mort.przepisownia.data.entities.IngredientInput
 import com.mort.przepisownia.data.entities.Recipe
-import com.mort.przepisownia.data.entities.RecipeStep
 import com.mort.przepisownia.data.entities.RecipeWithDetails
 import com.mort.przepisownia.data.repository.RecipeRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class RecipeViewModel(
@@ -27,21 +29,30 @@ class RecipeViewModel(
     var recipeFavState by mutableStateOf(false)
     var recipeImageState by mutableStateOf("")
     var recipeLinkState by mutableStateOf("")
-    var recipeIngredientsState by mutableStateOf(listOf<Ingredient>())
-    var recipeStepsState by mutableStateOf(listOf<RecipeStep>())
+
     var isLoading by mutableStateOf(true)
+    var searchQuery by mutableStateOf("")
+
+    private val _allRecipes = recipeRepository.getRecipes()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _pendingDeletedRecipe = MutableStateFlow<Recipe?>(null)
     val pendingDeletedRecipe: StateFlow<Recipe?> = _pendingDeletedRecipe
 
-    //Funkcje dot. przepisów
-    lateinit var getAllRecipes: Flow<List<Recipe>>
-
-    init {
-        viewModelScope.launch {
-            getAllRecipes = recipeRepository.getRecipes()
+    val filteredRecipes: StateFlow<List<Recipe>> = combine(
+        _allRecipes,
+        snapshotFlow { searchQuery.trim() }
+    ) { recipes, query ->
+        if (query.isBlank()) {
+            recipes
+        } else {
+            recipes.filter {
+                it.name.contains(query, ignoreCase = true) ||
+                        it.desc.contains(query, ignoreCase = true)
+            }
         }
-    }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
 
     fun getRecipeDetails(recipeId: Long): Flow<RecipeWithDetails> {
         return recipeRepository.getRecipeDetails(recipeId)
@@ -101,13 +112,5 @@ class RecipeViewModel(
 
     fun onRecipeLinkChanged(newString: String) {
         recipeLinkState = newString
-    }
-
-    fun removeIngredient(index: Int) {
-        recipeIngredientsState = recipeIngredientsState.toMutableList().also { it.removeAt(index) }
-    }
-
-    fun removeStep(index: Int) {
-        recipeStepsState = recipeStepsState.toMutableList().also { it.removeAt(index) }
     }
 }

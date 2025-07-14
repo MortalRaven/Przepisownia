@@ -65,7 +65,7 @@ import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialog
 import com.mort.przepisownia.ui.screens.recipe.components.StepDialog
 import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialogMode
-import com.mort.przepisownia.ui.screens.recipe.components.LoadingOverlay
+import com.mort.przepisownia.ui.common.LoadingOverlay
 import com.mort.przepisownia.ui.screens.recipe.components.StepDialogMode
 import com.mort.przepisownia.utils.saveImageToInternalStorage
 import kotlinx.coroutines.launch
@@ -124,8 +124,6 @@ fun AddEditRecipeView(
                     viewModel.recipeFavState = false
                     viewModel.recipeImageState = ""
                     viewModel.recipeLinkState = ""
-                    viewModel.recipeIngredientsState = listOf()
-                    viewModel.recipeStepsState = listOf()
                     viewModel.isLoading = false
                     Log.i("STATUS", "Ładowanie zakończone - nowy przepis")
                 }
@@ -140,8 +138,6 @@ fun AddEditRecipeView(
                         viewModel.recipeFavState = recipeDetails.value.recipe.isFavourite
                         viewModel.recipeImageState = recipeDetails.value.recipe.imagePath
                         viewModel.recipeLinkState = recipeDetails.value.recipe.link
-                        viewModel.recipeIngredientsState = recipeDetails.value.ingredients
-                        viewModel.recipeStepsState = recipeDetails.value.steps
 
                         ingredients.clear()
                         ingredients.addAll(recipeDetails.value.ingredients.map {
@@ -365,7 +361,7 @@ fun AddEditRecipeView(
                                         }
                                         //Usuwanie składnika
                                         IconButton(onClick = {
-                                            viewModel.removeIngredient(index)
+                                            ingredients.removeAt(index)
                                         }) {
                                             Icon(
                                                 imageVector = Icons.Default.Clear,
@@ -451,7 +447,7 @@ fun AddEditRecipeView(
                                             }
 
                                             IconButton(onClick = {
-                                                viewModel.removeStep(index)
+                                                steps.removeAt(index)
                                             }) {
                                                 Icon(
                                                     imageVector = Icons.Default.Clear,
