@@ -27,7 +27,10 @@ fun AppBarView(
     searchable: Boolean = false,
     isSearching: Boolean = false,
     onSearchClick: () -> Unit = {},
-    onFilterClick: () -> Unit = {}
+    onFilterClick: () -> Unit = {},
+    layoutEditable: Boolean = false,
+    onLayoutClick: () -> Unit = {},
+    layoutType: ViewType? = null
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -79,6 +82,26 @@ fun AppBarView(
                         painter = painterResource(R.drawable.baseline_filter_list_24),
                         contentDescription = "Filtrowanie"
                     )
+                }
+            }
+
+            if (layoutEditable) {
+                IconButton(
+                    onClick = {
+                        onLayoutClick()
+                    }
+                ) {
+                    if (layoutType == ViewType.GRID) {
+                        Icon(
+                            painter = painterResource(R.drawable.baseline_grid_view_24),
+                            contentDescription = "Widok siatki"
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(R.drawable.baseline_view_list_24),
+                            contentDescription = "Widok listy"
+                        )
+                    }
                 }
             }
         }

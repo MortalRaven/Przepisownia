@@ -65,6 +65,7 @@ data class RecipeWithDetails(
     val steps: List<RecipeStep>
 )
 
+/*
 object DummyRecipes {
     val lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse lectus orci, elementum gravida lorem sed, blandit porta risus. Maecenas scelerisque tristique libero, a maximus odio sagittis eu. Nulla auctor purus et ante rutrum dapibus. In pellentesque ante laoreet mi iaculis tincidunt. Donec erat dolor, vehicula quis diam in, scelerisque pulvinar libero. Ut porttitor vestibulum leo et porttitor. Curabitur sit amet dictum metus. Suspendisse id hendrerit felis, nec porttitor sem. "
     val recipeList = listOf(
@@ -79,4 +80,4 @@ object DummyRecipes {
         Recipe(name = "Kremowa zupa z zieloną soczewicą", desc = lorem),
         Recipe(name = "Naleśniki", desc = lorem)
     )
-}
+}*/

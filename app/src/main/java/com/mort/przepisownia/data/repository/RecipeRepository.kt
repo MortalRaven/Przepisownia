@@ -44,10 +44,6 @@ class RecipeRepository(
 
     fun getRecipes(): Flow<List<Recipe>> = recipeDao.getAllRecipes()
 
-    fun getRecipeByID(id: Long): Flow<Recipe> {
-        return recipeDao.getRecipeByID(id)
-    }
-
     fun getRecipeDetails(recipeId: Long): Flow<RecipeWithDetails> =
         recipeDao.getRecipeDetails(recipeId)
 

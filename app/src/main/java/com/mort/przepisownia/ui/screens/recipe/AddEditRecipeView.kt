@@ -1,6 +1,5 @@
 package com.mort.przepisownia.ui.screens.recipe
 
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,22 +17,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Card
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -55,17 +54,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.mort.przepisownia.ui.common.AppBarView
 import com.mort.przepisownia.data.entities.IngredientInput
 import com.mort.przepisownia.data.entities.Recipe
 import com.mort.przepisownia.data.entities.RecipeWithDetails
 import com.mort.przepisownia.navigation.Screen
-import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialog
-import com.mort.przepisownia.ui.screens.recipe.components.StepDialog
-import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialogMode
+import com.mort.przepisownia.ui.common.AppBarView
 import com.mort.przepisownia.ui.common.LoadingOverlay
+import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialog
+import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialogMode
+import com.mort.przepisownia.ui.screens.recipe.components.StepDialog
 import com.mort.przepisownia.ui.screens.recipe.components.StepDialogMode
 import com.mort.przepisownia.utils.saveImageToInternalStorage
 import kotlinx.coroutines.launch
@@ -75,10 +75,13 @@ import java.io.File
 fun AddEditRecipeView(
     id: Long,
     mode: RecipeEditMode,
-    viewModel: RecipeViewModel,
     navController: NavController,
 ) {
-    Log.i("LOADING STATE", "Loading value: ${viewModel.isLoading}")
+    val appContext = LocalContext.current.applicationContext
+    val viewModel: RecipeViewModel = viewModel(
+        factory = RecipeViewModelFactory(appContext)
+    )
+
     val context = LocalContext.current
     //Obsługa zdjęć
     val photoPickerLauncher =
@@ -118,19 +121,16 @@ fun AddEditRecipeView(
         if (!initialized.value) {
             when (mode) {
                 RecipeEditMode.ADD -> {
-                    Log.i("STATUS", "Ładowanie - nowy przepis ")
                     viewModel.recipeNameState = ""
                     viewModel.recipeDescState = ""
                     viewModel.recipeFavState = false
                     viewModel.recipeImageState = ""
                     viewModel.recipeLinkState = ""
-                    viewModel.isLoading = false
-                    Log.i("STATUS", "Ładowanie zakończone - nowy przepis")
+                    viewModel.isRecipeLoading = false
                 }
 
                 RecipeEditMode.EDIT -> {
                     if (recipeDetails.value.recipe.id == 0L) {
-                        Log.i("STATUS","Ładowanie")
                         return@LaunchedEffect
                     } else {
                         viewModel.recipeNameState = recipeDetails.value.recipe.name
@@ -146,8 +146,7 @@ fun AddEditRecipeView(
 
                         steps.clear()
                         steps.addAll(recipeDetails.value.steps.map { it.description })
-                        viewModel.isLoading = false
-                        Log.i("STATUS", "Ładowanie zakończone")
+                        viewModel.isRecipeLoading = false
                     }
                 }
             }
@@ -157,7 +156,7 @@ fun AddEditRecipeView(
 
     DisposableEffect(Unit) {
         onDispose {
-            viewModel.isLoading = true
+            viewModel.isRecipeLoading = true
         }
     }
 
@@ -221,7 +220,7 @@ fun AddEditRecipeView(
             )
         }
     ) { paddingValues ->
-        LoadingOverlay(isLoading = viewModel.isLoading) {
+        LoadingOverlay(isLoading = viewModel.isRecipeLoading) {
             LazyColumn(
                 modifier = Modifier
                     .padding(paddingValues)

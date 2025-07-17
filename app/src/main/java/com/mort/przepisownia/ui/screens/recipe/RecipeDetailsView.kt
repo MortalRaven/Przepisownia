@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mort.przepisownia.ui.common.AppBarView
@@ -60,9 +61,13 @@ import java.io.File
 @Composable
 fun RecipeDetailsView(
     id: Long,
-    viewModel: RecipeViewModel,
     navController: NavController,
 ) {
+    val appContext = LocalContext.current.applicationContext
+    val viewModel: RecipeViewModel = viewModel(
+        factory = RecipeViewModelFactory(appContext)
+    )
+
     val context = LocalContext.current
     val recipe = viewModel.getRecipeDetails(id).collectAsState(
         initial = RecipeWithDetails(
@@ -213,16 +218,6 @@ fun RecipeDetailsView(
                 }
             }
 
-            item {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    text = "Data utworzenia: ${formatDate(recipe.value.recipe.createdAt)}",
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.End
-                )
-            }
 //Opis przepisu
             item {
                 Text(
@@ -232,6 +227,17 @@ fun RecipeDetailsView(
                     text = recipe.value.recipe.desc,
                     fontSize = 14.sp,
                     textAlign = TextAlign.Start
+                )
+            }
+
+            item {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    text = "Data dodania: ${formatDate(recipe.value.recipe.createdAt)}",
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.End
                 )
             }
 //Tabela składników

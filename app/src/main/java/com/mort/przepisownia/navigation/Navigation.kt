@@ -1,7 +1,6 @@
 package com.mort.przepisownia.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -9,7 +8,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mort.przepisownia.ui.screens.HomeView
-import com.mort.przepisownia.ui.screens.recipe.RecipeViewModel
 import com.mort.przepisownia.ui.screens.recipe.AddEditRecipeView
 import com.mort.przepisownia.ui.screens.recipe.RecipeDetailsView
 import com.mort.przepisownia.ui.screens.recipe.RecipeEditMode
@@ -17,7 +15,6 @@ import com.mort.przepisownia.ui.screens.recipe.RecipeListView
 
 @Composable
 fun Navigation(
-    viewModel: RecipeViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
     NavHost(
@@ -29,7 +26,7 @@ fun Navigation(
         }
 
         composable(Screen.RecipesScreen.route) {
-            RecipeListView(navController, viewModel)
+            RecipeListView(navController)
         }
 
         composable(
@@ -45,7 +42,6 @@ fun Navigation(
             val id = entry.arguments!!.getLong("id")
             RecipeDetailsView(
                 id = id,
-                viewModel = viewModel,
                 navController = navController
             )
         }
@@ -64,7 +60,6 @@ fun Navigation(
             AddEditRecipeView(
                 id = id,
                 mode = if (id == 0L) RecipeEditMode.ADD else RecipeEditMode.EDIT,
-                viewModel = viewModel,
                 navController = navController
             )
         }

@@ -1,28 +1,37 @@
 package com.mort.przepisownia.ui.screens.recipe
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.mort.przepisownia.data.Graph
 import com.mort.przepisownia.data.entities.IngredientInput
 import com.mort.przepisownia.data.entities.Recipe
 import com.mort.przepisownia.data.entities.RecipeWithDetails
+import com.mort.przepisownia.data.preferences.PreferencesManager
 import com.mort.przepisownia.data.repository.RecipeRepository
+import com.mort.przepisownia.ui.common.ViewType
 import com.mort.przepisownia.ui.screens.recipe.components.SortType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class RecipeViewModel(
     private val recipeRepository: RecipeRepository = Graph.recipeRepository,
+    private val preferencesManager: PreferencesManager
 ) : ViewModel() {
+
+    private val _recipesLayout = MutableStateFlow(ViewType.GRID)
+    val recipesLayout: StateFlow<ViewType> = _recipesLayout.asStateFlow()
 
     var recipeNameState by mutableStateOf("")
     var recipeDescState by mutableStateOf("")
@@ -30,12 +39,13 @@ class RecipeViewModel(
     var recipeImageState by mutableStateOf("")
     var recipeLinkState by mutableStateOf("")
 
-    var isLoading by mutableStateOf(true)
+    var isDbLoading by mutableStateOf(true)
+    var isRecipeLoading by mutableStateOf(true)
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
 
-    private val _sortType = MutableStateFlow(SortType.ALPHABET_ASC)
+    private val _sortType = MutableStateFlow(SortType.DATE_ADDED_DESC)
     val sortType: StateFlow<SortType> = _sortType
 
     private val _showFavorites = MutableStateFlow(false)
@@ -62,8 +72,8 @@ class RecipeViewModel(
             }
             .sortedWith(
                 when (sortType) {
-                    SortType.ALPHABET_ASC -> compareBy { it.name }
-                    SortType.ALPHABET_DESC -> compareByDescending { it.name }
+                    SortType.ALPHABET_ASC -> compareBy { it.name.lowercase() }
+                    SortType.ALPHABET_DESC -> compareByDescending { it.name.lowercase() }
                     SortType.DATE_ADDED_ASC -> compareBy { it.createdAt }
                     SortType.DATE_ADDED_DESC -> compareByDescending { it.createdAt }
                     SortType.DATE_VIEWED_ASC -> compareBy<Recipe> { it.lastViewedAt }.thenBy { it.createdAt }
@@ -73,6 +83,28 @@ class RecipeViewModel(
             .toList()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    init {
+        viewModelScope.launch {
+            filteredRecipes.collect { recipes ->
+                if (isDbLoading && recipes.isNotEmpty()) {
+                    isDbLoading = false
+                }
+            }
+        }
+    }
+
+    init {
+        viewModelScope.launch {
+            preferencesManager.recipesLayout.collect { layout ->
+                val layoutEnum = try {
+                    layout
+                } catch (e: Exception) {
+                    ViewType.GRID
+                }
+                _recipesLayout.value = layoutEnum
+            }
+        }
+    }
 
     fun getRecipeDetails(recipeId: Long): Flow<RecipeWithDetails> {
         return recipeRepository.getRecipeDetails(recipeId)
@@ -151,5 +183,22 @@ class RecipeViewModel(
     fun resetFilters() {
         _sortType.value = SortType.ALPHABET_ASC
         _showFavorites.value = false
+    }
+
+    fun setRecipesLayout(viewType: ViewType) {
+        _recipesLayout.value = viewType
+        viewModelScope.launch {
+            preferencesManager.setRecipesLayout(viewType)
+        }
+    }
+}
+
+class RecipeViewModelFactory(
+    private val context: Context
+): ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        val recipeRepository = Graph.recipeRepository
+        val preferencesManager = PreferencesManager(context)
+        return RecipeViewModel(recipeRepository, preferencesManager) as T
     }
 }

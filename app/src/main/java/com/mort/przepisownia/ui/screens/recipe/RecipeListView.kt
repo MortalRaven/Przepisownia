@@ -12,10 +12,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -48,25 +51,33 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.ui.common.AppBarView
 import com.mort.przepisownia.ui.common.BlockOverlay
+import com.mort.przepisownia.ui.common.LoadingOverlay
+import com.mort.przepisownia.ui.common.ViewType
 import com.mort.przepisownia.ui.screens.recipe.components.FilterDrawer
-import com.mort.przepisownia.ui.screens.recipe.components.RecipeItem
+import com.mort.przepisownia.ui.screens.recipe.components.RecipeGridItem
+import com.mort.przepisownia.ui.screens.recipe.components.RecipeListItem
 import com.mort.przepisownia.ui.screens.recipe.components.SearchBarView
 
 @Composable
 fun RecipeListView(
-    navController: NavController,
-    viewModel: RecipeViewModel,
+    navController: NavController
 ) {
+    val context = LocalContext.current.applicationContext
+    val viewModel: RecipeViewModel = viewModel(
+        factory = RecipeViewModelFactory(context)
+    )
+
     val lifecycleOwner = LocalLifecycleOwner.current
     val focusManger = LocalFocusManager.current
     val gridState = rememberLazyGridState()
+    val listState = rememberLazyListState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var isLoading by remember { mutableStateOf(true) }
     var isSearching by rememberSaveable { mutableStateOf(false) }
     val isDrawerOpen = remember { mutableStateOf(false) }
     val shouldBlockInteractions = remember { mutableStateOf(false) }
@@ -79,9 +90,7 @@ fun RecipeListView(
 
     val recipeList = allRecipes.filter { it.id != pendingRecipe?.id }
 
-    LaunchedEffect(allRecipes) {
-        isLoading = false
-    }
+    val recipesLayout by viewModel.recipesLayout.collectAsState()
 
     LaunchedEffect(pendingRecipe) {
         if (pendingRecipe != null) {
@@ -105,7 +114,11 @@ fun RecipeListView(
     }
 
     LaunchedEffect(sortType, showFavorites, searchQuery) {
-        gridState.scrollToItem(0)
+        if(recipesLayout == ViewType.GRID) {
+            gridState.scrollToItem(0)
+        } else {
+            listState.scrollToItem(0)
+        }
     }
 
     DisposableEffect(lifecycleOwner) {
@@ -141,7 +154,13 @@ fun RecipeListView(
                     onFilterClick = {
                         focusManger.clearFocus()
                         isDrawerOpen.value = !isDrawerOpen.value
-                    }
+                    },
+                    layoutEditable = true,
+                    onLayoutClick = {
+                        val newLayout = if (recipesLayout == ViewType.GRID) ViewType.LIST else ViewType.GRID
+                        viewModel.setRecipesLayout(newLayout)
+                    },
+                    layoutType = recipesLayout
                 )
                 if (isSearching) {
                     SearchBarView(
@@ -165,96 +184,115 @@ fun RecipeListView(
                 Icon(imageVector = Icons.Default.Add, contentDescription = "")
             }
         }
-    ) {innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            if (recipeList.isEmpty()) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "\uD83C\uDF72 \nNie masz jeszcze żadnych przepisów.\nZacznij swoją przygodę kulinarną od dodania pierwszego!",
-                        fontSize = 24.sp,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            } else {
-                //Siatka zawierająca przepisy
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    LazyVerticalGrid(
+    ) { paddingValues ->
+        LoadingOverlay(isLoading = viewModel.isDbLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                if (recipeList.isEmpty()) {
+                    Column(
                         modifier = Modifier.fillMaxSize(),
-                        columns = GridCells.Fixed(2),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        state = gridState
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        items(recipeList, key = { recipe -> recipe.id }
-                        ) { recipe ->
-                            RecipeItem(context = LocalContext.current, recipe = recipe) {
-                                val id = recipe.id
-                                viewModel.updateRecipeLastViewed(id, System.currentTimeMillis())
-                                navController.navigate(Screen.RecipeScreen.route + "/$id")
+                        Text(
+                            text = "\uD83C\uDF72 \nNie masz jeszcze żadnych przepisów.\nZacznij swoją przygodę kulinarną od dodania pierwszego!",
+                            fontSize = 24.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                } else {
+                    //Siatka zawierająca przepisy
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        if (recipesLayout == ViewType.GRID) {
+                            LazyVerticalGrid(
+                                modifier = Modifier.fillMaxSize(),
+                                columns = GridCells.Fixed(2),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                state = gridState
+                            ) {
+                                items(recipeList, key = { recipe -> recipe.id }
+                                ) { recipe ->
+                                    RecipeGridItem(context = LocalContext.current, recipe = recipe) {
+                                        val id = recipe.id
+                                        viewModel.updateRecipeLastViewed(id, System.currentTimeMillis())
+                                        navController.navigate(Screen.RecipeScreen.route + "/$id")
+                                    }
+                                }
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                state = listState
+                            ) {
+                                items(recipeList, key = { recipe -> recipe.id }
+                                ) {recipe ->
+                                    RecipeListItem(context = LocalContext.current, recipe = recipe) {
+                                        val id = recipe.id
+                                        viewModel.updateRecipeLastViewed(id, System.currentTimeMillis())
+                                        navController.navigate(Screen.RecipeScreen.route + "/$id")
+                                    }
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            if (shouldBlockInteractions.value) {
-                BlockOverlay {
-                    focusManger.clearFocus()
-                    shouldBlockInteractions.value = false
+                if (shouldBlockInteractions.value) {
+                    BlockOverlay {
+                        focusManger.clearFocus()
+                        shouldBlockInteractions.value = false
+                    }
                 }
-            }
 
-            if (isDrawerOpen.value) {
-                BlockOverlay {
-                    isDrawerOpen.value = false
+                if (isDrawerOpen.value) {
+                    BlockOverlay {
+                        isDrawerOpen.value = false
+                    }
                 }
-            }
 
-            AnimatedVisibility(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(300.dp)
-                    .align(Alignment.CenterEnd),
-                visible = isDrawerOpen.value,
-                enter = slideInHorizontally(
-                    initialOffsetX = { it },
-                    animationSpec = tween(300)
-                ),
-                exit = slideOutHorizontally(
-                    targetOffsetX = { it },
-                    animationSpec = tween(300)
-                )
-            ) {
-                Box(
+                AnimatedVisibility(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxHeight()
                         .width(300.dp)
-                        .background(
-                            MaterialTheme.colorScheme.surface,
-                            RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
-                        )
-                        .padding(16.dp)
-                ) {
-                    FilterDrawer(
-                        currentSort = sortType,
-                        showOnlyFavorites = showFavorites,
-                        onSortChange = { viewModel.updateSortType(it) },
-                        onToggleFavorites = { viewModel.toggleFavorites() },
-                        onApply = { isDrawerOpen.value = false },
-                        onReset = {
-                            viewModel.resetFilters()
-                            isDrawerOpen.value = false
-                        }
+                        .align(Alignment.CenterEnd),
+                    visible = isDrawerOpen.value,
+                    enter = slideInHorizontally(
+                        initialOffsetX = { it },
+                        animationSpec = tween(300)
+                    ),
+                    exit = slideOutHorizontally(
+                        targetOffsetX = { it },
+                        animationSpec = tween(300)
                     )
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .width(300.dp)
+                            .background(
+                                MaterialTheme.colorScheme.surface,
+                                RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
+                            )
+                            .padding(16.dp)
+                    ) {
+                        FilterDrawer(
+                            currentSort = sortType,
+                            showOnlyFavorites = showFavorites,
+                            onSortChange = { viewModel.updateSortType(it) },
+                            onToggleFavorites = { viewModel.toggleFavorites() },
+                            onApply = { isDrawerOpen.value = false },
+                            onReset = {
+                                viewModel.resetFilters()
+                                isDrawerOpen.value = false
+                            }
+                        )
+                    }
                 }
             }
         }
