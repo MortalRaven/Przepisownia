@@ -18,7 +18,7 @@ fun LoadingOverlay(
         content()
         if (isLoading) {
             Box(
-                modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)),
+                modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 1f)),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()

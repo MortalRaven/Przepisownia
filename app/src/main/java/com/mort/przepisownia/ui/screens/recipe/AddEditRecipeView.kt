@@ -507,7 +507,8 @@ fun AddEditRecipeView(
                                             desc = viewModel.recipeDescState.trim(),
                                             isFavourite = viewModel.recipeFavState,
                                             imagePath = viewModel.recipeImageState,
-                                            link = viewModel.recipeLinkState.trim()
+                                            link = viewModel.recipeLinkState.trim(),
+                                            createdAt = System.currentTimeMillis()
                                         ),
                                         ingredients = ingredients.toList(),
                                         steps = steps.toList()

@@ -91,4 +91,14 @@ class RecipeRepository(
         ingredientsDao.deleteIngredientsByRecipeId(recipe.id)
         stepsDao.deleteStepsByRecipeId(recipe.id)
     }
+
+    suspend fun updateRecipeLastViewed(id: Long, date: Long) {
+        val recipe = recipeDao.getRecipeByID(id).first()
+        val updatedRecipe = recipe.copy(lastViewedAt = date)
+        recipeDao.updateRecipe(updatedRecipe)
+    }
+
+    suspend fun updateMissingCreatedAt() {
+        recipeDao.updateCreatedAtDefaults(System.currentTimeMillis())
+    }
 }

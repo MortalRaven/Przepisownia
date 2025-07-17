@@ -21,7 +21,11 @@ data class Recipe(
     @ColumnInfo(name = "recipe_image_path")
     val imagePath: String = "",
     @ColumnInfo(name = "recipe_source")
-    val link: String = ""
+    val link: String = "",
+    @ColumnInfo(name = "created_at")
+    val createdAt: Long = System.currentTimeMillis(),
+    @ColumnInfo(name = "last_viewed_at")
+    val lastViewedAt: Long? = null
 )
 
 

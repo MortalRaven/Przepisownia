@@ -28,7 +28,7 @@ data class Ingredient(
 )
 
 data class MeasurementUnits(
-    val tablespoons: List<String> = listOf("łyżeczka", "łyżeczki",),
+    val tablespoons: List<String> = listOf("łyżeczka", "łyżeczki"),
     val spoons: List<String> = listOf("łyżka", "łyżki"),
     val pieces: String = "szt.",
     val weight: List<String> = listOf("g", "dag", "kg"),

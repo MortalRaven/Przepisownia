@@ -53,6 +53,7 @@ import com.mort.przepisownia.data.entities.Recipe
 import com.mort.przepisownia.data.entities.RecipeWithDetails
 import com.mort.przepisownia.ui.common.MenuDropdownItem
 import com.mort.przepisownia.ui.screens.recipe.components.DeleteRecipeDialog
+import com.mort.przepisownia.utils.formatDate
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -212,6 +213,16 @@ fun RecipeDetailsView(
                 }
             }
 
+            item {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    text = "Data utworzenia: ${formatDate(recipe.value.recipe.createdAt)}",
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.End
+                )
+            }
 //Opis przepisu
             item {
                 Text(

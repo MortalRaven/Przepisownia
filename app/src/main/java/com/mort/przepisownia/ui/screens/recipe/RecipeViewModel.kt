@@ -3,7 +3,6 @@ package com.mort.przepisownia.ui.screens.recipe
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mort.przepisownia.data.Graph
@@ -11,6 +10,7 @@ import com.mort.przepisownia.data.entities.IngredientInput
 import com.mort.przepisownia.data.entities.Recipe
 import com.mort.przepisownia.data.entities.RecipeWithDetails
 import com.mort.przepisownia.data.repository.RecipeRepository
+import com.mort.przepisownia.ui.screens.recipe.components.SortType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +31,15 @@ class RecipeViewModel(
     var recipeLinkState by mutableStateOf("")
 
     var isLoading by mutableStateOf(true)
-    var searchQuery by mutableStateOf("")
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
+    private val _sortType = MutableStateFlow(SortType.ALPHABET_ASC)
+    val sortType: StateFlow<SortType> = _sortType
+
+    private val _showFavorites = MutableStateFlow(false)
+    val showFavorites: StateFlow<Boolean> = _showFavorites
 
     private val _allRecipes = recipeRepository.getRecipes()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -41,16 +49,28 @@ class RecipeViewModel(
 
     val filteredRecipes: StateFlow<List<Recipe>> = combine(
         _allRecipes,
-        snapshotFlow { searchQuery.trim() }
-    ) { recipes, query ->
-        if (query.isBlank()) {
-            recipes
-        } else {
-            recipes.filter {
-                it.name.contains(query, ignoreCase = true) ||
-                        it.desc.contains(query, ignoreCase = true)
-            }
+        _searchQuery,
+        _sortType,
+        _showFavorites
+    ) { recipes, query, sortType, showFavs ->
+        recipes.asSequence().filter {
+            it.name.contains(query.trim(), ignoreCase = true) ||
+                    it.desc.contains(query.trim(), ignoreCase = true)
         }
+            .filter {
+                !showFavs || it.isFavourite
+            }
+            .sortedWith(
+                when (sortType) {
+                    SortType.ALPHABET_ASC -> compareBy { it.name }
+                    SortType.ALPHABET_DESC -> compareByDescending { it.name }
+                    SortType.DATE_ADDED_ASC -> compareBy { it.createdAt }
+                    SortType.DATE_ADDED_DESC -> compareByDescending { it.createdAt }
+                    SortType.DATE_VIEWED_ASC -> compareBy<Recipe> { it.lastViewedAt }.thenBy { it.createdAt }
+                    SortType.DATE_VIEWED_DESC -> compareByDescending<Recipe> { it.lastViewedAt }.thenByDescending { it.createdAt }
+                }
+            )
+            .toList()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
 
@@ -68,10 +88,6 @@ class RecipeViewModel(
         }
     }
 
-    fun getRecipeByID(id: Long): Flow<Recipe> {
-        return recipeRepository.getRecipeByID(id)
-    }
-
     fun updateRecipe(
         recipe: Recipe,
         ingredients: List<IngredientInput>,
@@ -85,6 +101,12 @@ class RecipeViewModel(
     fun updateRecipeFav(id: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             recipeRepository.updateRecipeFav(id)
+        }
+    }
+
+    fun updateRecipeLastViewed(id: Long, date: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            recipeRepository.updateRecipeLastViewed(id, date)
         }
     }
 
@@ -112,5 +134,22 @@ class RecipeViewModel(
 
     fun onRecipeLinkChanged(newString: String) {
         recipeLinkState = newString
+    }
+
+    fun updateSearchQuery(newQuery: String) {
+        _searchQuery.value = newQuery
+    }
+
+    fun updateSortType(newSortType: SortType) {
+        _sortType.value = newSortType
+    }
+
+    fun toggleFavorites() {
+        _showFavorites.value = !_showFavorites.value
+    }
+
+    fun resetFilters() {
+        _sortType.value = SortType.ALPHABET_ASC
+        _showFavorites.value = false
     }
 }

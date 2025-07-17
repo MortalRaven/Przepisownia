@@ -22,7 +22,6 @@ fun StepDialog(
 ) {
     val description = remember { mutableStateOf(step) }
     val focusRequester = remember { FocusRequester() }
-    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()

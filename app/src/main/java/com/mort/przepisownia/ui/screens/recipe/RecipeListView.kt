@@ -1,17 +1,23 @@
 package com.mort.przepisownia.ui.screens.recipe
 
-import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
@@ -34,8 +40,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -47,7 +51,10 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.ui.common.AppBarView
+import com.mort.przepisownia.ui.common.BlockOverlay
+import com.mort.przepisownia.ui.screens.recipe.components.FilterDrawer
 import com.mort.przepisownia.ui.screens.recipe.components.RecipeItem
+import com.mort.przepisownia.ui.screens.recipe.components.SearchBarView
 
 @Composable
 fun RecipeListView(
@@ -55,17 +62,29 @@ fun RecipeListView(
     viewModel: RecipeViewModel,
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
-
     val focusManger = LocalFocusManager.current
+    val gridState = rememberLazyGridState()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    var isLoading by remember { mutableStateOf(true) }
     var isSearching by rememberSaveable { mutableStateOf(false) }
+    val isDrawerOpen = remember { mutableStateOf(false) }
     val shouldBlockInteractions = remember { mutableStateOf(false) }
 
-    val pendingRecipe = viewModel.pendingDeletedRecipe.collectAsState()
+    val sortType by viewModel.sortType.collectAsState()
+    val showFavorites by viewModel.showFavorites.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val pendingRecipe by viewModel.pendingDeletedRecipe.collectAsState()
+    val allRecipes by viewModel.filteredRecipes.collectAsState()
+
+    val recipeList = allRecipes.filter { it.id != pendingRecipe?.id }
+
+    LaunchedEffect(allRecipes) {
+        isLoading = false
+    }
 
     LaunchedEffect(pendingRecipe) {
-        if (pendingRecipe.value != null) {
+        if (pendingRecipe != null) {
             val result = snackbarHostState.showSnackbar(
                 message = "Przepis został usunięty.",
                 actionLabel = "Cofnij",
@@ -78,18 +97,22 @@ fun RecipeListView(
                 }
 
                 SnackbarResult.Dismissed -> {
-                    viewModel.deleteRecipe(pendingRecipe.value!!)
+                    viewModel.deleteRecipe(pendingRecipe!!)
                     viewModel.clearPendingDeletedRecipe()
                 }
             }
         }
     }
 
+    LaunchedEffect(sortType, showFavorites, searchQuery) {
+        gridState.scrollToItem(0)
+    }
+
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_STOP) {
                 isSearching = false
-                viewModel.searchQuery = ""
+                viewModel.updateSearchQuery("")
             }
         }
 
@@ -100,29 +123,37 @@ fun RecipeListView(
         }
     }
 
-    val allRecipes = viewModel.filteredRecipes.collectAsState()
-    val recipeList = allRecipes.value.filter { it.id != pendingRecipe.value?.id }
-
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            AppBarView(
-                title = "Przepisy",
-                onBackNavClick = { navController.navigate(Screen.HomeScreen.route) },
-                searchable = true,
-                isSearching = isSearching,
-                onSearchClick = {
-                    if (isSearching) {
-                        viewModel.searchQuery = ""
+            Column {
+                AppBarView(
+                    title = "Przepisy",
+                    onBackNavClick = { navController.navigate(Screen.HomeScreen.route) },
+                    searchable = true,
+                    isSearching = isSearching,
+                    onSearchClick = {
+                        if (isSearching) {
+                            viewModel.updateSearchQuery("")
+                        }
+                        isSearching = !isSearching
+                    },
+                    onFilterClick = {
+                        focusManger.clearFocus()
+                        isDrawerOpen.value = !isDrawerOpen.value
                     }
-                    isSearching = !isSearching
-                },
-                searchQuery = viewModel.searchQuery,
-                onQueryChange = { viewModel.searchQuery = it},
-                onSearchFocusChanged = { hasFocus ->
-                    shouldBlockInteractions.value = hasFocus
+                )
+                if (isSearching) {
+                    SearchBarView(
+                        searchQuery = searchQuery,
+                        onQueryChange = { viewModel.updateSearchQuery(it) },
+                        onFocusChanged = { hasFocus ->
+                            shouldBlockInteractions.value = hasFocus
+                            isDrawerOpen.value = false
+                        }
+                    )
                 }
-            )
+            }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
@@ -134,53 +165,95 @@ fun RecipeListView(
                 Icon(imageVector = Icons.Default.Add, contentDescription = "")
             }
         }
-    ) {
-        if (recipeList.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "\uD83C\uDF72 \nNie masz jeszcze żadnych przepisów.\nZacznij swoją przygodę kulinarną od dodania pierwszego!",
-                    fontSize = 24.sp,
-                    textAlign = TextAlign.Center
-                )
-            }
-        } else {
-            //Siatka zawierająca przepisy
-            Box(modifier = Modifier.fillMaxSize().padding(it)) {
-                LazyVerticalGrid(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 16.dp, bottom = 16.dp),
-                    columns = GridCells.Fixed(2),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            if (recipeList.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    items(recipeList, key = { recipe -> recipe.id }
-                    ) { recipe ->
-                        RecipeItem(context = LocalContext.current, recipe = recipe) {
-                            val id = recipe.id
-                            navController.navigate(Screen.RecipeScreen.route + "/$id")
+                    Text(
+                        text = "\uD83C\uDF72 \nNie masz jeszcze żadnych przepisów.\nZacznij swoją przygodę kulinarną od dodania pierwszego!",
+                        fontSize = 24.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                //Siatka zawierająca przepisy
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    LazyVerticalGrid(
+                        modifier = Modifier.fillMaxSize(),
+                        columns = GridCells.Fixed(2),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        state = gridState
+                    ) {
+                        items(recipeList, key = { recipe -> recipe.id }
+                        ) { recipe ->
+                            RecipeItem(context = LocalContext.current, recipe = recipe) {
+                                val id = recipe.id
+                                viewModel.updateRecipeLastViewed(id, System.currentTimeMillis())
+                                navController.navigate(Screen.RecipeScreen.route + "/$id")
+                            }
                         }
                     }
                 }
+            }
 
-                if (shouldBlockInteractions.value) {
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .background(Color.Transparent)
-                            .pointerInput(Unit) {
-                                detectTapGestures(
-                                    onTap = {
-                                        focusManger.clearFocus()
-                                        shouldBlockInteractions.value = false
-                                    }
-                                )
-                            }
+            if (shouldBlockInteractions.value) {
+                BlockOverlay {
+                    focusManger.clearFocus()
+                    shouldBlockInteractions.value = false
+                }
+            }
+
+            if (isDrawerOpen.value) {
+                BlockOverlay {
+                    isDrawerOpen.value = false
+                }
+            }
+
+            AnimatedVisibility(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(300.dp)
+                    .align(Alignment.CenterEnd),
+                visible = isDrawerOpen.value,
+                enter = slideInHorizontally(
+                    initialOffsetX = { it },
+                    animationSpec = tween(300)
+                ),
+                exit = slideOutHorizontally(
+                    targetOffsetX = { it },
+                    animationSpec = tween(300)
+                )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .width(300.dp)
+                        .background(
+                            MaterialTheme.colorScheme.surface,
+                            RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
+                        )
+                        .padding(16.dp)
+                ) {
+                    FilterDrawer(
+                        currentSort = sortType,
+                        showOnlyFavorites = showFavorites,
+                        onSortChange = { viewModel.updateSortType(it) },
+                        onToggleFavorites = { viewModel.toggleFavorites() },
+                        onApply = { isDrawerOpen.value = false },
+                        onReset = {
+                            viewModel.resetFilters()
+                            isDrawerOpen.value = false
+                        }
                     )
                 }
             }

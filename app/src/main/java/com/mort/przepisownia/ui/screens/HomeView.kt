@@ -35,8 +35,7 @@ fun HomeView(
     navController: NavController,
 ) {
 
-    Scaffold(
-    ) {
+    Scaffold {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()

@@ -32,4 +32,7 @@ abstract class RecipeDao {
     @Transaction
     @Query("SELECT * FROM 'recipes' WHERE id = :recipeId")
     abstract fun getRecipeDetails(recipeId: Long): Flow<RecipeWithDetails>
+
+    @Query("UPDATE 'recipes' SET created_at = :time WHERE created_at = 0")
+    abstract suspend fun updateCreatedAtDefaults(time: Long)
 }
