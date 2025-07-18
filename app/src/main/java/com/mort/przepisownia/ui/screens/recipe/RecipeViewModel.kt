@@ -86,7 +86,7 @@ class RecipeViewModel(
     init {
         viewModelScope.launch {
             filteredRecipes.collect { recipes ->
-                if (isDbLoading && recipes.isNotEmpty()) {
+                if (isDbLoading) {
                     isDbLoading = false
                 }
             }

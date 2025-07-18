@@ -3,6 +3,7 @@ package com.mort.przepisownia.ui.common
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -30,7 +31,9 @@ fun AppBarView(
     onFilterClick: () -> Unit = {},
     layoutEditable: Boolean = false,
     onLayoutClick: () -> Unit = {},
-    layoutType: ViewType? = null
+    layoutType: ViewType? = null,
+    acceptable: Boolean = false,
+    onAcceptClick: () -> Unit = {}
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -102,6 +105,19 @@ fun AppBarView(
                             contentDescription = "Widok listy"
                         )
                     }
+                }
+            }
+
+            if (acceptable) {
+                IconButton(
+                    onClick = {
+                        onAcceptClick()
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Done,
+                        contentDescription = "Zatwierdź"
+                    )
                 }
             }
         }

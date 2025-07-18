@@ -3,8 +3,6 @@ package com.mort.przepisownia.data.entities
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 
@@ -27,27 +25,6 @@ data class Recipe(
     @ColumnInfo(name = "last_viewed_at")
     val lastViewedAt: Long? = null
 )
-
-
-@Entity(tableName = "recipes_steps",
-    foreignKeys = [ForeignKey(
-        entity = Recipe::class,
-        parentColumns = ["id"],
-        childColumns = ["recipeId"],
-        onDelete = ForeignKey.CASCADE
-    )],
-    indices = [Index("recipeId")])
-data class RecipeStep(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0L,
-    @ColumnInfo(name = "recipeId")
-    val recipeId: Long,
-    @ColumnInfo(name = "step_number")
-    val stepNumber: Int = 1,
-    @ColumnInfo(name = "step_desc")
-    val description: String = ""
-)
-
 
 data class RecipeWithDetails(
     @Embedded val recipe: Recipe,

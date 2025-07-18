@@ -62,6 +62,7 @@ import com.mort.przepisownia.data.entities.Recipe
 import com.mort.przepisownia.data.entities.RecipeWithDetails
 import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.ui.common.AppBarView
+import com.mort.przepisownia.ui.common.EditMode
 import com.mort.przepisownia.ui.common.LoadingOverlay
 import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialog
 import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialogMode
@@ -74,7 +75,7 @@ import java.io.File
 @Composable
 fun AddEditRecipeView(
     id: Long,
-    mode: RecipeEditMode,
+    mode: EditMode,
     navController: NavController,
 ) {
     val appContext = LocalContext.current.applicationContext
@@ -120,7 +121,7 @@ fun AddEditRecipeView(
     LaunchedEffect(mode, recipeDetails.value) {
         if (!initialized.value) {
             when (mode) {
-                RecipeEditMode.ADD -> {
+                EditMode.ADD -> {
                     viewModel.recipeNameState = ""
                     viewModel.recipeDescState = ""
                     viewModel.recipeFavState = false
@@ -129,7 +130,7 @@ fun AddEditRecipeView(
                     viewModel.isRecipeLoading = false
                 }
 
-                RecipeEditMode.EDIT -> {
+                EditMode.EDIT -> {
                     if (recipeDetails.value.recipe.id == 0L) {
                         return@LaunchedEffect
                     } else {
@@ -558,8 +559,4 @@ fun RecipeTextField(
         modifier = Modifier.fillMaxWidth(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
     )
-}
-
-enum class RecipeEditMode {
-    ADD, EDIT
 }

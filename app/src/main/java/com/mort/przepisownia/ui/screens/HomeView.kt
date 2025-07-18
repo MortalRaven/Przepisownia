@@ -109,7 +109,7 @@ object MenuList {
     val menuList = listOf(
         MenuItem("Dodaj przepis", R.drawable.baseline_add_24, Screen.AddEditScreen),
         MenuItem("Lista Przepisów", R.drawable.outline_menu_book_24, Screen.RecipesScreen),
-        MenuItem("Lista Zakupów", R.drawable.outline_shopping_cart_24, Screen.RecipesScreen),
+        MenuItem("Lista Zakupów", R.drawable.outline_shopping_cart_24, Screen.ShoppingScreen),
         MenuItem("Ustawienia", R.drawable.outline_settings_24, Screen.RecipesScreen)
     )
 }

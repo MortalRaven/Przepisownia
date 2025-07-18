@@ -56,6 +56,7 @@ import androidx.navigation.NavController
 import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.ui.common.AppBarView
 import com.mort.przepisownia.ui.common.BlockOverlay
+import com.mort.przepisownia.ui.common.EmptyScreen
 import com.mort.przepisownia.ui.common.LoadingOverlay
 import com.mort.przepisownia.ui.common.ViewType
 import com.mort.przepisownia.ui.screens.recipe.components.FilterDrawer
@@ -192,17 +193,7 @@ fun RecipeListView(
                     .padding(paddingValues)
             ) {
                 if (recipeList.isEmpty()) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "\uD83C\uDF72 \nNie masz jeszcze żadnych przepisów.\nZacznij swoją przygodę kulinarną od dodania pierwszego!",
-                            fontSize = 24.sp,
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                    EmptyScreen(text = "\uD83C\uDF72 \nNie masz jeszcze żadnych przepisów.\nZacznij swoją przygodę kulinarną od dodania pierwszego!")
                 } else {
                     //Siatka zawierająca przepisy
                     Box(
