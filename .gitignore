@@ -22,3 +22,4 @@ build/
 Thumbs.db
 /app/src/main/java/com/mort/przepisownia/FunkcjeTODO.txt
 /app/proguard-rules.pro
+/.todo/

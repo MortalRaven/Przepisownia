@@ -7,6 +7,7 @@ import com.mort.przepisownia.data.entities.ListWithItems
 import com.mort.przepisownia.data.entities.ShoppingItem
 import com.mort.przepisownia.data.entities.ShoppingList
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 
 class ShoppingRepository(
     private val shoppingListDao: ShoppingListDao,
@@ -28,6 +29,10 @@ class ShoppingRepository(
         }
 
         shoppingItemDao.addItems(itemsWithId)
+    }
+
+    fun getListByID(id: Long): Flow<ShoppingList> {
+        return shoppingListDao.getListByID(id)
     }
 
     fun getLists(): Flow<List<ShoppingList>> = shoppingListDao.getAllLists()
@@ -56,5 +61,11 @@ class ShoppingRepository(
                 )
             }
         )
+    }
+
+    suspend fun updateItemChecked(id: Long) {
+        val item = shoppingItemDao.getItemById(id).first()
+        val updatedItem = item.copy(isChecked = !item.isChecked)
+        shoppingItemDao.updateItem(updatedItem)
     }
 }

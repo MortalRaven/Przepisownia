@@ -1,6 +1,7 @@
 package com.mort.przepisownia.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -13,6 +14,8 @@ import com.mort.przepisownia.ui.screens.HomeView
 import com.mort.przepisownia.ui.screens.recipe.AddEditRecipeView
 import com.mort.przepisownia.ui.screens.recipe.RecipeDetailsView
 import com.mort.przepisownia.ui.screens.recipe.RecipeListView
+import com.mort.przepisownia.ui.screens.recipe.RecipeViewModel
+import com.mort.przepisownia.ui.screens.recipe.RecipeViewModelFactory
 import com.mort.przepisownia.ui.screens.shopping.AddEditListScreen
 import com.mort.przepisownia.ui.screens.shopping.ShoppingDetailsView
 import com.mort.przepisownia.ui.screens.shopping.ShoppingListView
@@ -20,6 +23,7 @@ import com.mort.przepisownia.ui.screens.shopping.ShoppingViewModel
 
 @Composable
 fun Navigation(
+    recipeViewModel: RecipeViewModel = viewModel(factory = RecipeViewModelFactory(LocalContext.current.applicationContext)),
     listViewModel: ShoppingViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
@@ -32,7 +36,7 @@ fun Navigation(
         }
 
         composable(Screen.RecipesScreen.route) {
-            RecipeListView(navController)
+            RecipeListView(navController, recipeViewModel)
         }
 
         composable(
@@ -48,7 +52,8 @@ fun Navigation(
             val id = entry.arguments!!.getLong("id")
             RecipeDetailsView(
                 id = id,
-                navController = navController
+                navController = navController,
+                viewModel = recipeViewModel
             )
         }
 
@@ -66,7 +71,8 @@ fun Navigation(
             AddEditRecipeView(
                 id = id,
                 mode = if (id == 0L) EditMode.ADD else EditMode.EDIT,
-                navController = navController
+                navController = navController,
+                viewModel = recipeViewModel
             )
         }
 
@@ -88,7 +94,8 @@ fun Navigation(
             AddEditListScreen(
                 id = id,
                 mode = if (id == 0L) EditMode.ADD else EditMode.EDIT,
-                navController = navController
+                navController = navController,
+                viewModel = listViewModel
             )
         }
 
@@ -105,7 +112,8 @@ fun Navigation(
             val id = entry.arguments!!.getLong("id")
             ShoppingDetailsView(
                 id = id,
-                navController = navController
+                navController = navController,
+                viewModel = listViewModel
             )
         }
     }

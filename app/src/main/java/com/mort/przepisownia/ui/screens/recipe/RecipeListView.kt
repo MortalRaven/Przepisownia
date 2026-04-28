@@ -31,7 +31,6 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -46,12 +45,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.ui.common.AppBarView
@@ -66,13 +62,9 @@ import com.mort.przepisownia.ui.screens.recipe.components.SearchBarView
 
 @Composable
 fun RecipeListView(
-    navController: NavController
+    navController: NavController,
+    viewModel: RecipeViewModel
 ) {
-    val context = LocalContext.current.applicationContext
-    val viewModel: RecipeViewModel = viewModel(
-        factory = RecipeViewModelFactory(context)
-    )
-
     val lifecycleOwner = LocalLifecycleOwner.current
     val focusManger = LocalFocusManager.current
     val gridState = rememberLazyGridState()
@@ -86,15 +78,13 @@ fun RecipeListView(
     val sortType by viewModel.sortType.collectAsState()
     val showFavorites by viewModel.showFavorites.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
-    val pendingRecipe by viewModel.pendingDeletedRecipe.collectAsState()
+    val pendingRecipe by viewModel.pendingDeleteRecipe.collectAsState()
     val allRecipes by viewModel.filteredRecipes.collectAsState()
-
-    val recipeList = allRecipes.filter { it.id != pendingRecipe?.id }
-
+    val recipeList = remember(allRecipes, pendingRecipe) { allRecipes.filter { it.id != pendingRecipe?.id } }
     val recipesLayout by viewModel.recipesLayout.collectAsState()
 
     LaunchedEffect(pendingRecipe) {
-        if (pendingRecipe != null) {
+        pendingRecipe?.let {recipe ->
             val result = snackbarHostState.showSnackbar(
                 message = "Przepis został usunięty.",
                 actionLabel = "Cofnij",
@@ -103,19 +93,19 @@ fun RecipeListView(
 
             when (result) {
                 SnackbarResult.ActionPerformed -> {
-                    viewModel.clearPendingDeletedRecipe()
+                    viewModel.clearPendingDeleteList()
                 }
 
                 SnackbarResult.Dismissed -> {
-                    viewModel.deleteRecipe(pendingRecipe!!)
-                    viewModel.clearPendingDeletedRecipe()
+                    viewModel.deleteRecipe(recipe)
+                    viewModel.clearPendingDeleteList()
                 }
             }
         }
     }
 
     LaunchedEffect(sortType, showFavorites, searchQuery) {
-        if(recipesLayout == ViewType.GRID) {
+        if (recipesLayout == ViewType.GRID) {
             gridState.scrollToItem(0)
         } else {
             listState.scrollToItem(0)
@@ -134,6 +124,15 @@ fun RecipeListView(
 
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.pendingDeleteRecipe.value?.let { recipe ->
+                viewModel.deleteRecipe(recipe)
+                viewModel.clearPendingDeleteList()
+            }
         }
     }
 
@@ -158,7 +157,8 @@ fun RecipeListView(
                     },
                     layoutEditable = true,
                     onLayoutClick = {
-                        val newLayout = if (recipesLayout == ViewType.GRID) ViewType.LIST else ViewType.GRID
+                        val newLayout =
+                            if (recipesLayout == ViewType.GRID) ViewType.LIST else ViewType.GRID
                         viewModel.setRecipesLayout(newLayout)
                     },
                     layoutType = recipesLayout
@@ -208,9 +208,15 @@ fun RecipeListView(
                             ) {
                                 items(recipeList, key = { recipe -> recipe.id }
                                 ) { recipe ->
-                                    RecipeGridItem(context = LocalContext.current, recipe = recipe) {
+                                    RecipeGridItem(
+                                        context = LocalContext.current,
+                                        recipe = recipe
+                                    ) {
                                         val id = recipe.id
-                                        viewModel.updateRecipeLastViewed(id, System.currentTimeMillis())
+                                        viewModel.updateRecipeLastViewed(
+                                            id,
+                                            System.currentTimeMillis()
+                                        )
                                         navController.navigate(Screen.RecipeScreen.route + "/$id")
                                     }
                                 }
@@ -222,10 +228,16 @@ fun RecipeListView(
                                 state = listState
                             ) {
                                 items(recipeList, key = { recipe -> recipe.id }
-                                ) {recipe ->
-                                    RecipeListItem(context = LocalContext.current, recipe = recipe) {
+                                ) { recipe ->
+                                    RecipeListItem(
+                                        context = LocalContext.current,
+                                        recipe = recipe
+                                    ) {
                                         val id = recipe.id
-                                        viewModel.updateRecipeLastViewed(id, System.currentTimeMillis())
+                                        viewModel.updateRecipeLastViewed(
+                                            id,
+                                            System.currentTimeMillis()
+                                        )
                                         navController.navigate(Screen.RecipeScreen.route + "/$id")
                                     }
                                 }

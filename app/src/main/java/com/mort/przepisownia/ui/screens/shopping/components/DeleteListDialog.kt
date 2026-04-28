@@ -1,25 +1,25 @@
-package com.mort.przepisownia.ui.screens.recipe.components
+package com.mort.przepisownia.ui.screens.shopping.components
 
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.Text
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import com.mort.przepisownia.data.entities.Recipe
+import com.mort.przepisownia.data.entities.ShoppingList
 
 @Composable
-fun DeleteRecipeDialog(
-    recipe: Recipe,
+fun DeleteListDialog(
+    shoppingList: ShoppingList,
     onDismiss: () -> Unit,
-    onConfirm: (Recipe) -> Unit,
+    onConfirm: (ShoppingList) -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = { onDismiss() },
-        title = { Text("Usuwanie przepisu") },
-        text = { Text("Czy na pewno chcesz usunąć przepis: ${recipe.name}?") },
+        title = { Text("Usuwanie listy") },
+        text = { Text("Czy na pewno chcesz usunąć listę: ${shoppingList.name}?") },
         confirmButton = {
             TextButton(
                 onClick = {
-                    onConfirm(recipe)
+                    onConfirm(shoppingList)
                 }
             ) {
                 Text("Tak")

@@ -1,24 +1,28 @@
 package com.mort.przepisownia.ui.screens.shopping
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,13 +35,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mort.przepisownia.data.entities.IngredientInput
 import com.mort.przepisownia.data.entities.ListWithItems
@@ -55,6 +59,7 @@ fun AddEditListScreen(
     id: Long,
     mode: EditMode,
     navController: NavController,
+    viewModel: ShoppingViewModel
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val snackMessage = remember { mutableStateOf("") }
@@ -62,7 +67,6 @@ fun AddEditListScreen(
 
     val focusManager = LocalFocusManager.current
 
-    val viewModel: ShoppingViewModel = viewModel()
     val ingredients = remember { mutableStateListOf<IngredientInput>() }
 
     val fullList = viewModel.getListItems(id).collectAsState(
@@ -85,6 +89,7 @@ fun AddEditListScreen(
                         return@LaunchedEffect
                     } else {
                         viewModel.listNameState = fullList.value.shoppingList.name
+                        viewModel.listCreatedState = fullList.value.shoppingList.createdAt
 
                         ingredients.clear()
                         ingredients.addAll(fullList.value.shoppingItems.map {
@@ -131,6 +136,7 @@ fun AddEditListScreen(
 
     Scaffold(
         modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppBarView(
                 title = if (mode == EditMode.ADD) "Dodaj listę" else "Edytuj listę",
@@ -138,7 +144,7 @@ fun AddEditListScreen(
                 acceptable = true,
                 onAcceptClick = {
                     if (ingredients.isNotEmpty()) {
-                        if (id != 0L) {
+                        if (mode == EditMode.EDIT) {
                             viewModel.updateList(
                                 ShoppingList(
                                     id = id,
@@ -164,7 +170,7 @@ fun AddEditListScreen(
                                 message = snackMessage.value,
                                 duration = SnackbarDuration.Short
                             )
-                            navController.navigate(Screen.RecipesScreen.route)
+                            navController.navigate(Screen.ShoppingScreen.route)
                         }
                     } else {
                         snackMessage.value = "Wypełnij pola."
@@ -240,23 +246,47 @@ fun AddEditListScreen(
                 ) {
                     ingredients.forEachIndexed { index, item ->
                         Row(
-                            modifier = Modifier.padding(horizontal = 16.dp).wrapContentHeight(),
+                            modifier = Modifier.padding(start = 16.dp, end = 8.dp).defaultMinSize(30.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(
-                                modifier = Modifier.weight(1f),
-                                text = item.name,
-                                fontSize = 16.sp
-                            )
+                            Row(
+                                modifier = Modifier.weight(1f).clickable {
+                                    ingredientDialogMode.value = IngredientDialogMode.EDIT
+                                    ingredientToEditIndex.value = index
+                                    showIngredientEditDialog.value =
+                                        !showIngredientEditDialog.value
+                                },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    modifier = Modifier.weight(1f),
+                                    text = item.name,
+                                    fontSize = 16.sp
+                                )
 
-                            Text(
-                                modifier = Modifier.weight(0.5f),
-                                text = "${item.quantity} ${item.unit}",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.End
-                            )
+                                Text(
+                                    modifier = Modifier.weight(0.5f),
+                                    text = "${item.quantity} ${item.unit}",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.End
+                                )
+                            }
+                            Row(
+                                modifier = Modifier.weight(0.2f)
+                            ) {
+                                IconButton(onClick = {
+                                    ingredients.removeAt(index)
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Clear,
+                                        contentDescription = "Usuń składnik",
+                                        tint = Color.Red
+                                    )
+                                }
+                            }
                         }
                         HorizontalDivider(
                             modifier = Modifier.fillMaxWidth(),

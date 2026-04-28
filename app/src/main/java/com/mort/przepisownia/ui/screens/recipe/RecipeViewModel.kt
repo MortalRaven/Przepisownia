@@ -51,11 +51,11 @@ class RecipeViewModel(
     private val _showFavorites = MutableStateFlow(false)
     val showFavorites: StateFlow<Boolean> = _showFavorites
 
+    private val _pendingDeleteRecipe = MutableStateFlow<Recipe?>(null)
+    val pendingDeleteRecipe: StateFlow<Recipe?> = _pendingDeleteRecipe
+
     private val _allRecipes = recipeRepository.getRecipes()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    private val _pendingDeletedRecipe = MutableStateFlow<Recipe?>(null)
-    val pendingDeletedRecipe: StateFlow<Recipe?> = _pendingDeletedRecipe
 
     val filteredRecipes: StateFlow<List<Recipe>> = combine(
         _allRecipes,
@@ -85,7 +85,7 @@ class RecipeViewModel(
 
     init {
         viewModelScope.launch {
-            filteredRecipes.collect { recipes ->
+            filteredRecipes.collect { _ ->
                 if (isDbLoading) {
                     isDbLoading = false
                 }
@@ -104,6 +104,10 @@ class RecipeViewModel(
                 _recipesLayout.value = layoutEnum
             }
         }
+    }
+
+    fun getRecipeByID(id:Long): Flow<Recipe> {
+        return recipeRepository.getRecipeByID(id)
     }
 
     fun getRecipeDetails(recipeId: Long): Flow<RecipeWithDetails> {
@@ -140,14 +144,6 @@ class RecipeViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             recipeRepository.updateRecipeLastViewed(id, date)
         }
-    }
-
-    fun setPendingDeletedRecipe(recipe: Recipe) {
-        _pendingDeletedRecipe.value = recipe
-    }
-
-    fun clearPendingDeletedRecipe() {
-        _pendingDeletedRecipe.value = null
     }
 
     fun deleteRecipe(recipe: Recipe) {
@@ -190,6 +186,14 @@ class RecipeViewModel(
         viewModelScope.launch {
             preferencesManager.setRecipesLayout(viewType)
         }
+    }
+
+    fun setPendingDeletedRecipe(recipe: Recipe) {
+        _pendingDeleteRecipe.value = recipe
+    }
+
+    fun clearPendingDeleteList() {
+        _pendingDeleteRecipe.value = null
     }
 }
 

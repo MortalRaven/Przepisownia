@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.mort.przepisownia.data.Graph
 import com.mort.przepisownia.data.entities.IngredientInput
 import com.mort.przepisownia.data.entities.ListWithItems
-import com.mort.przepisownia.data.entities.Recipe
 import com.mort.przepisownia.data.entities.ShoppingList
 import com.mort.przepisownia.data.repository.ShoppingRepository
 import com.mort.przepisownia.ui.screens.recipe.components.SortType
@@ -74,6 +73,10 @@ class ShoppingViewModel(
         }
     }
 
+    fun getListById(id: Long): Flow<ShoppingList> {
+        return shoppingRepository.getListByID(id)
+    }
+
     fun getListItems(listId: Long): Flow<ListWithItems> {
         return shoppingRepository.getListItems(listId)
     }
@@ -90,6 +93,12 @@ class ShoppingViewModel(
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             shoppingRepository.updateRecipe(list, itemsInput)
+        }
+    }
+
+    fun updateItemChecked(id: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            shoppingRepository.updateItemChecked(id)
         }
     }
 

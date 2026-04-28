@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -90,9 +91,7 @@ fun AppBarView(
 
             if (layoutEditable) {
                 IconButton(
-                    onClick = {
-                        onLayoutClick()
-                    }
+                    onClick = { onLayoutClick() }
                 ) {
                     if (layoutType == ViewType.GRID) {
                         Icon(
@@ -110,9 +109,7 @@ fun AppBarView(
 
             if (acceptable) {
                 IconButton(
-                    onClick = {
-                        onAcceptClick()
-                    }
+                    onClick = { onAcceptClick() }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Done,

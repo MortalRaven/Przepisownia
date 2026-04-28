@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.mort.przepisownia.data.entities.Recipe
 import com.mort.przepisownia.data.entities.ShoppingItem
 import kotlinx.coroutines.flow.Flow
 
@@ -17,6 +18,9 @@ abstract class ShoppingItemDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun addItems(items: List<ShoppingItem>)
+
+    @Query("SELECT * FROM 'shopping_items' WHERE id = :id")
+    abstract fun getItemById(id: Long): Flow<ShoppingItem>
 
     @Query("SELECT * FROM 'shopping_items' WHERE listId = :listId")
     abstract fun getListItems(listId: Long): Flow<List<ShoppingItem>>

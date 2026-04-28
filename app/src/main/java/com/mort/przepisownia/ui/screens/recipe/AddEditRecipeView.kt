@@ -77,12 +77,8 @@ fun AddEditRecipeView(
     id: Long,
     mode: EditMode,
     navController: NavController,
+    viewModel: RecipeViewModel
 ) {
-    val appContext = LocalContext.current.applicationContext
-    val viewModel: RecipeViewModel = viewModel(
-        factory = RecipeViewModelFactory(appContext)
-    )
-
     val context = LocalContext.current
     //Obsługa zdjęć
     val photoPickerLauncher =

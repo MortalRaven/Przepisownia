@@ -44,14 +44,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.mort.przepisownia.ui.common.AppBarView
 import com.mort.przepisownia.R
-import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.data.entities.Recipe
 import com.mort.przepisownia.data.entities.RecipeWithDetails
+import com.mort.przepisownia.navigation.Screen
+import com.mort.przepisownia.ui.common.AppBarView
 import com.mort.przepisownia.ui.common.MenuDropdownItem
 import com.mort.przepisownia.ui.screens.recipe.components.DeleteRecipeDialog
 import com.mort.przepisownia.utils.formatDate
@@ -62,12 +61,8 @@ import java.io.File
 fun RecipeDetailsView(
     id: Long,
     navController: NavController,
+    viewModel: RecipeViewModel
 ) {
-    val appContext = LocalContext.current.applicationContext
-    val viewModel: RecipeViewModel = viewModel(
-        factory = RecipeViewModelFactory(appContext)
-    )
-
     val context = LocalContext.current
     val recipe = viewModel.getRecipeDetails(id).collectAsState(
         initial = RecipeWithDetails(

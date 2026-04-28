@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -18,6 +19,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,13 +41,14 @@ fun ShoppingListView(
     val snackbarHostState = remember { SnackbarHostState() }
 
     val sortType by viewModel.sortType.collectAsState()
+    val listState = rememberLazyListState()
+
     val pendingList by viewModel.pendingDeleteList.collectAsState()
     val allLists by viewModel.filteredLists.collectAsState()
-
-    val shoppingLists = allLists.filter { it.id != pendingList?.id }
+    val shoppingLists = remember(allLists, pendingList) { allLists.filter { it.id != pendingList?.id } }
 
     LaunchedEffect(pendingList) {
-        if (pendingList != null) {
+        pendingList?.let { list ->
             val result = snackbarHostState.showSnackbar(
                 message = "Lista została usunięta.",
                 actionLabel = "Cofnij",
@@ -58,9 +61,25 @@ fun ShoppingListView(
                 }
 
                 SnackbarResult.Dismissed -> {
-                    viewModel.deleteList(pendingList!!)
+                    viewModel.deleteList(list)
                     viewModel.clearPendingDeleteList()
                 }
+
+            }
+        }
+    }
+
+    LaunchedEffect(shoppingLists) {
+        if (pendingList == null) {
+            listState.animateScrollToItem(0)
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.pendingDeleteList.value?.let { list ->
+                viewModel.deleteList(list)
+                viewModel.clearPendingDeleteList()
             }
         }
     }
@@ -101,7 +120,8 @@ fun ShoppingListView(
                     ) {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            state = listState
                         ) {
                             items(shoppingLists, key = { shoppingList -> shoppingList.id }
                             ) { shoppingList ->
