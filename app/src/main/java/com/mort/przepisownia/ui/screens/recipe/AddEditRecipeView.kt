@@ -17,10 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
@@ -49,14 +45,15 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.mort.przepisownia.R
 import com.mort.przepisownia.data.entities.IngredientInput
 import com.mort.przepisownia.data.entities.Recipe
 import com.mort.przepisownia.data.entities.RecipeWithDetails
@@ -266,7 +263,7 @@ fun AddEditRecipeView(
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.AddCircle,
+                                    painter = painterResource(R.drawable.baseline_add_circle_24),
                                     contentDescription = "Dodaj zdjęcie"
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
@@ -288,7 +285,9 @@ fun AddEditRecipeView(
                             RecipeTextField(
                                 label = "Nazwa przepisu",
                                 value = viewModel.recipeNameState,
-                                onValueChanged = { viewModel.onRecipeNameChanged(it) }
+                                onValueChanged = { viewModel.onRecipeNameChanged(it) },
+                                validatorHasErrors = viewModel.nameIsEmpty,
+                                supportingText = "Pole wymagane"
                             )
 // Dodawanie opisu
                             RecipeTextField(
@@ -300,7 +299,9 @@ fun AddEditRecipeView(
                             RecipeTextField(
                                 label = "Link",
                                 value = viewModel.recipeLinkState,
-                                onValueChanged = { viewModel.onRecipeLinkChanged(it) }
+                                onValueChanged = { viewModel.onRecipeLinkChanged(it) },
+                                validatorHasErrors = viewModel.linkHasErrors,
+                                supportingText = "Nieprawidłowy link"
                             )
                         }
                     }
@@ -350,7 +351,7 @@ fun AddEditRecipeView(
                                                 !showIngredientEditDialog.value
                                         }) {
                                             Icon(
-                                                imageVector = Icons.Default.Edit,
+                                                painter = painterResource(R.drawable.baseline_edit_24),
                                                 contentDescription = "Edytuj składnik",
                                                 tint = Color.Gray
                                             )
@@ -360,7 +361,7 @@ fun AddEditRecipeView(
                                             ingredients.removeAt(index)
                                         }) {
                                             Icon(
-                                                imageVector = Icons.Default.Clear,
+                                                painter = painterResource(R.drawable.baseline_clear_24),
                                                 contentDescription = "Usuń składnik",
                                                 tint = Color.Red
                                             )
@@ -436,7 +437,7 @@ fun AddEditRecipeView(
                                                 showStepEditDialog.value = !showStepEditDialog.value
                                             }) {
                                                 Icon(
-                                                    imageVector = Icons.Default.Edit,
+                                                    painter = painterResource(R.drawable.baseline_edit_24),
                                                     contentDescription = "Edytuj krok",
                                                     tint = Color.Gray
                                                 )
@@ -446,7 +447,7 @@ fun AddEditRecipeView(
                                                 steps.removeAt(index)
                                             }) {
                                                 Icon(
-                                                    imageVector = Icons.Default.Clear,
+                                                    painter = painterResource(R.drawable.baseline_clear_24),
                                                     contentDescription = "Usuń krok",
                                                     tint = Color.Red
                                                 )
@@ -460,7 +461,7 @@ fun AddEditRecipeView(
                                 Row {
                                     Button(
                                         modifier = Modifier.fillMaxWidth(),
-                                        shape = RectangleShape,
+                                        shape = RoundedCornerShape(50),
                                         onClick = {
                                             stepDialogMode.value = StepDialogMode.ADD
                                             showStepEditDialog.value = !showStepEditDialog.value
@@ -479,7 +480,7 @@ fun AddEditRecipeView(
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RectangleShape,
                         onClick = {
-                            if (viewModel.recipeNameState.isNotEmpty()) {
+                            if (!viewModel.nameIsEmpty && !viewModel.linkHasErrors) {
                                 if (id != 0L) {
                                     //Aktualizacja przepisu
                                     viewModel.updateRecipe(
@@ -547,12 +548,20 @@ fun RecipeTextField(
     label: String,
     value: String,
     onValueChanged: (String) -> Unit,
+    validatorHasErrors: Boolean = false,
+    supportingText: String = ""
 ) {
     OutlinedTextField(
+        modifier = Modifier.fillMaxWidth(),
         value = value,
         onValueChange = onValueChanged,
         label = { Text(text = label) },
-        modifier = Modifier.fillMaxWidth(),
+        isError = validatorHasErrors,
+        supportingText = {
+            if (validatorHasErrors) {
+                Text(text = supportingText)
+            }
+        },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
     )
 }

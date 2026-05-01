@@ -1,11 +1,6 @@
 package com.mort.przepisownia.ui.common
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,7 +37,7 @@ fun AppBarView(
         {
             IconButton(onClick = { onBackNavClick() }) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    painter = painterResource(R.drawable.baseline_arrow_back_24),
                     contentDescription = null
                 )
             }
@@ -74,7 +69,7 @@ fun AppBarView(
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Search,
+                        painter = painterResource(R.drawable.baseline_search_24),
                         contentDescription = "Szukaj"
                     )
                 }
@@ -112,7 +107,7 @@ fun AppBarView(
                     onClick = { onAcceptClick() }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Done,
+                        painter = painterResource(R.drawable.baseline_search_24),
                         contentDescription = "Zatwierdź"
                     )
                 }

@@ -1,6 +1,7 @@
 package com.mort.przepisownia.ui.screens.recipe
 
 import android.content.Context
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -15,6 +16,7 @@ import com.mort.przepisownia.data.preferences.PreferencesManager
 import com.mort.przepisownia.data.repository.RecipeRepository
 import com.mort.przepisownia.ui.common.ViewType
 import com.mort.przepisownia.ui.screens.recipe.components.SortType
+import com.mort.przepisownia.utils.isValidUrl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,6 +40,18 @@ class RecipeViewModel(
     var recipeFavState by mutableStateOf(false)
     var recipeImageState by mutableStateOf("")
     var recipeLinkState by mutableStateOf("")
+
+    val nameIsEmpty by derivedStateOf {
+        recipeNameState.isEmpty()
+    }
+
+    val linkHasErrors by derivedStateOf {
+        if (recipeLinkState.isNotEmpty()) {
+            !recipeLinkState.isValidUrl()
+        } else {
+            false
+        }
+    }
 
     var isDbLoading by mutableStateOf(true)
     var isRecipeLoading by mutableStateOf(true)

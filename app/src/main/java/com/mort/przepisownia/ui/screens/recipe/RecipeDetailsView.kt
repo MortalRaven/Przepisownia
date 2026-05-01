@@ -1,5 +1,7 @@
 package com.mort.przepisownia.ui.screens.recipe
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,12 +14,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
@@ -61,7 +59,7 @@ import java.io.File
 fun RecipeDetailsView(
     id: Long,
     navController: NavController,
-    viewModel: RecipeViewModel
+    viewModel: RecipeViewModel,
 ) {
     val context = LocalContext.current
     val recipe = viewModel.getRecipeDetails(id).collectAsState(
@@ -161,30 +159,6 @@ fun RecipeDetailsView(
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
                         )
                     }
-                    Button(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(16.dp)
-                            .size(48.dp),
-                        contentPadding = PaddingValues(0.dp),
-                        shape = CircleShape,
-                        onClick = {
-                            viewModel.updateRecipeFav(recipe.value.recipe.id)
-                            if (!viewModel.recipeFavState) {
-                                snackMessage.value = "Dodano przepis do ulubionych."
-                            } else {
-                                snackMessage.value = "Usunięto przepis do ulubionych."
-                            }
-                            scope.launch {
-                                snackbarHostState.showSnackbar(snackMessage.value)
-                            }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = if (viewModel.recipeFavState) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = "Ulubione"
-                        )
-                    }
                 }
             }
 //Nazwa przepisu
@@ -199,18 +173,69 @@ fun RecipeDetailsView(
                     textAlign = TextAlign.Center
                 )
             }
-//Link do przepisu
-            if (recipe.value.recipe.link.isNotEmpty()) {
-                item {
-                    Text(
+//Link, Ulubione
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    if (recipe.value.recipe.link.isNotEmpty()) {
+                        Button(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(0.5F),
+                            shape = RoundedCornerShape(50),
+                            onClick = {
+                                val urlIntent = Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse(recipe.value.recipe.link)
+                                )
+                                context.startActivity(urlIntent)
+                            }
+                        ) {
+                            Text("Link")
+                            Icon(
+                                painter = painterResource(R.drawable.baseline_open_in_browser_24),
+                                contentDescription = "Link"
+                            )
+                        }
+                    }
+                    Button(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        text = "Link: ${recipe.value.recipe.link}",
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Start
-                    )
+                            .weight(0.5F),
+                        shape = RoundedCornerShape(50),
+                        onClick = {
+                            viewModel.updateRecipeFav(recipe.value.recipe.id)
+                            if (!viewModel.recipeFavState) {
+                                snackMessage.value = "Dodano przepis do ulubionych."
+                            } else {
+                                snackMessage.value = "Usunięto przepis do ulubionych."
+                            }
+                            scope.launch {
+                                snackbarHostState.showSnackbar(snackMessage.value)
+                            }
+                        }
+                    ) {
+                        Text("Ulubione")
+                        Icon(
+                            painter = if (viewModel.recipeFavState) painterResource(R.drawable.baseline_favorite_24) else painterResource(
+                                R.drawable.baseline_favorite_border_24
+                            ),
+                            contentDescription = "Ulubione"
+                        )
+                    }
                 }
+                /*                    Text(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp),
+                                        text = "Link: ${recipe.value.recipe.link}",
+                                        fontSize = 14.sp,
+                                        textAlign = TextAlign.Start
+                                    )*/
             }
 
 //Opis przepisu
