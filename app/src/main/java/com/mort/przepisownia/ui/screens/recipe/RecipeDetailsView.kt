@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -51,7 +52,9 @@ import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.ui.common.AppBarView
 import com.mort.przepisownia.ui.common.MenuDropdownItem
 import com.mort.przepisownia.ui.screens.recipe.components.DeleteRecipeDialog
+import com.mort.przepisownia.utils.displayName
 import com.mort.przepisownia.utils.formatDate
+import com.mort.przepisownia.utils.inTextFormatter
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -107,11 +110,11 @@ fun RecipeDetailsView(
                 onBackNavClick = { navController.navigateUp() },
                 dropdownMenuItems = listOf(
                     MenuDropdownItem(
-                        text = "Edytuj",
+                        text = stringResource(R.string.edit),
                         action = { navController.navigate(Screen.AddEditScreen.route + "/$recipeId") }
                     ),
                     MenuDropdownItem(
-                        text = "Usuń",
+                        text = stringResource(R.string.delete),
                         action = {
                             showDeleteRecipeDialog.value = !showDeleteRecipeDialog.value
                         }
@@ -195,10 +198,10 @@ fun RecipeDetailsView(
                                 context.startActivity(urlIntent)
                             }
                         ) {
-                            Text("Link")
+                            Text(stringResource(R.string.link))
                             Icon(
                                 painter = painterResource(R.drawable.baseline_open_in_browser_24),
-                                contentDescription = "Link"
+                                contentDescription = stringResource(R.string.link)
                             )
                         }
                     }
@@ -210,32 +213,24 @@ fun RecipeDetailsView(
                         onClick = {
                             viewModel.updateRecipeFav(recipe.value.recipe.id)
                             if (!viewModel.recipeFavState) {
-                                snackMessage.value = "Dodano przepis do ulubionych."
+                                snackMessage.value = context.resources.getString(R.string.recipe_added_favourite)
                             } else {
-                                snackMessage.value = "Usunięto przepis do ulubionych."
+                                snackMessage.value = context.resources.getString(R.string.recipe_removed_favourite)
                             }
                             scope.launch {
                                 snackbarHostState.showSnackbar(snackMessage.value)
                             }
                         }
                     ) {
-                        Text("Ulubione")
+                        Text(stringResource(R.string.favourite))
                         Icon(
                             painter = if (viewModel.recipeFavState) painterResource(R.drawable.baseline_favorite_24) else painterResource(
                                 R.drawable.baseline_favorite_border_24
                             ),
-                            contentDescription = "Ulubione"
+                            contentDescription = stringResource(R.string.favourite)
                         )
                     }
                 }
-                /*                    Text(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 16.dp),
-                                        text = "Link: ${recipe.value.recipe.link}",
-                                        fontSize = 14.sp,
-                                        textAlign = TextAlign.Start
-                                    )*/
             }
 
 //Opis przepisu
@@ -255,7 +250,7 @@ fun RecipeDetailsView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
-                    text = "Data dodania: ${formatDate(recipe.value.recipe.createdAt)}",
+                    text = stringResource(R.string.date_added, formatDate(recipe.value.recipe.createdAt)),
                     fontSize = 14.sp,
                     textAlign = TextAlign.End
                 )
@@ -269,7 +264,7 @@ fun RecipeDetailsView(
                 ) {
                     Text(
                         modifier = Modifier.padding(bottom = 4.dp),
-                        text = "Składniki",
+                        text = stringResource(R.string.ingredients),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -294,15 +289,17 @@ fun RecipeDetailsView(
                                             !(ingredientsCheckState[ingredient.id] ?: false)
                                     }
                                 )
-
+                                //Nazwa składnika
                                 Text(
                                     modifier = Modifier.weight(1f),
                                     text = ingredient.name,
                                     fontSize = 14.sp
                                 )
-
+                                //Ilość skłandika
                                 Text(
-                                    text = "${ingredient.quantity} ${ingredient.unit}",
+                                    text = if (ingredient.quantity != null && ingredient.unit != null) {
+                                        "${ingredient.quantity.inTextFormatter()} ${ingredient.unit.displayName(ingredient.quantity)}"
+                                    } else {""},
                                     fontSize = 14.sp,
                                 )
                             }
@@ -320,7 +317,7 @@ fun RecipeDetailsView(
                     horizontalAlignment = Alignment.Start
                 ) {
                     Text(
-                        text = "Przepis:",
+                        text = stringResource(R.string.recipe) + ":",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -330,7 +327,7 @@ fun RecipeDetailsView(
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text(
-                                text = "Krok ${index + 1}.",
+                                text = stringResource(R.string.recipe_step) + " ${index + 1}.",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold
                             )

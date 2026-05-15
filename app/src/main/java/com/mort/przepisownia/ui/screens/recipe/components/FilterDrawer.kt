@@ -1,5 +1,6 @@
 package com.mort.przepisownia.ui.screens.recipe.components
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,7 +18,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.mort.przepisownia.R
 
 @Composable
 fun FilterDrawer(
@@ -32,7 +35,7 @@ fun FilterDrawer(
         modifier = Modifier.fillMaxSize().padding(16.dp)
     ) {
         Text(
-            text = "Sortuj według",
+            text = stringResource(R.string.sort_by),
             style = MaterialTheme.typography.titleMedium
         )
 
@@ -52,7 +55,7 @@ fun FilterDrawer(
                 )
                 Text(
                     modifier = Modifier.padding(start = 8.dp),
-                    text = sortType.label
+                    text = stringResource(sortType.label)
                     )
             }
         }
@@ -67,7 +70,7 @@ fun FilterDrawer(
             )
             Text(
                 modifier = Modifier.padding(start = 8.dp),
-                text = "Pokaż ulubione"
+                text = stringResource(R.string.show_favourites)
             )
         }
 
@@ -77,23 +80,23 @@ fun FilterDrawer(
             modifier = Modifier.fillMaxWidth(),
             onClick = onApply
         ) {
-            Text("Zastosuj")
+            Text(stringResource(R.string.apply))
         }
 
         TextButton(
             modifier = Modifier.fillMaxWidth(),
             onClick = onReset
         ) {
-            Text("Wyczyść filtry")
+            Text(stringResource(R.string.clear_filters))
         }
     }
 }
 
-enum class SortType(val label: String) {
-    ALPHABET_ASC("A-Z"),
-    ALPHABET_DESC("Z-A"),
-    DATE_ADDED_ASC("Data dodania: rosnąco"),
-    DATE_ADDED_DESC("Data dodania: malejąco"),
-    DATE_VIEWED_ASC("Ostatnio oglądane: rosnąco"),
-    DATE_VIEWED_DESC("Ostatnio oglądane: malejąco")
+enum class SortType(@StringRes val label: Int) {
+    ALPHABET_ASC(R.string.sort_alphabet_asc),
+    ALPHABET_DESC(R.string.sort_alphabet_desc),
+    DATE_ADDED_ASC(R.string.sort_date_added_asc),
+    DATE_ADDED_DESC(R.string.sort_date_added_desc),
+    DATE_VIEWED_ASC(R.string.sort_date_viewed_asc),
+    DATE_VIEWED_DESC(R.string.sort_date_viewed_desc)
 }

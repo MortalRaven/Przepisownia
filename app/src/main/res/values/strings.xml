@@ -1,3 +1,113 @@
 <resources>
     <string name="app_name">Przepisownia</string>
+    <string name="update_recipe">Update recipe</string>
+    <string name="add_recipe">Add recipe</string>
+    <string name="title_edit_recipe">Edit recipe</string>
+    <string name="add_photo">Add photo</string>
+    <string name="required_field">This field is required</string>
+    <string name="recipe_name">Recipe name</string>
+    <string name="description">Description</string>
+    <string name="link">Link</string>
+    <string name="invalid_link">Invalid link</string>
+    <string name="ingredients_list">Ingredients list</string>
+    <string name="edit_ingredient">Edit ingredient</string>
+    <string name="remove_ingredient">Remove ingredient</string>
+    <string name="new_ingredient">New ingredient</string>
+    <string name="recipe_instructions">Instructions</string>
+    <string name="recipe_step">Step</string>
+    <string name="edit_step">Edit step</string>
+    <string name="remove_step">Remove step</string>
+    <string name="new_step">New step</string>
+    <string name="recipe_updated">Recipe has been updated.</string>
+    <string name="recipe_added">Recipe has been added.</string>
+    <string name="warning_empty_fields">Complete all the required fields.</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="recipe_added_favourite">Recipe added to favourites.</string>
+    <string name="recipe_removed_favourite">Recipe removed from favourites.</string>
+    <string name="date_added">Date added: %1$s</string>
+    <string name="ingredients">Ingredients</string>
+    <string name="recipe">Recipe</string>
+    <string name="search">Search</string>
+    <string name="filter">Filter</string>
+    <string name="view_grid">Grid view</string>
+    <string name="view_list">List view</string>
+    <string name="accept">Accept</string>
+    <string name="more_options">More options</string>
+    <string name="yes">Yes</string>
+    <string name="cancel">Cancel</string>
+    <string name="deleting_recipe">Deleting a recipe</string>
+    <string name="deleting_recipe_confirmation">Are you sure you want to delete recipe %1$s?</string>
+    <string name="show_favourites">Show favourites</string>
+    <string name="apply">Apply</string>
+    <string name="clear_filters">Clear filters</string>
+    <string name="sort_date_added_asc">Date added: ascending</string>
+    <string name="sort_date_added_desc">Date added: descending</string>
+    <string name="sort_date_viewed_asc">Last viewed: ascending</string>
+    <string name="sort_date_viewed_desc">Last viewed: descending</string>
+    <string name="sort_alphabet_asc">A-Z</string>
+    <string name="sort_alphabet_desc">Z-A</string>
+    <string name="ingredient">Ingredient</string>
+    <string name="quantity">Amount</string>
+    <string name="unit">Unit</string>
+    <string name="save">Save</string>
+    <string name="search_for_recipe">Search for recipe...</string>
+    <string name="recipe_deleted">Recipe has been deleted.</string>
+    <string name="undo">Undo</string>
+    <string name="recipes">Recipes</string>
+    <string name="deleting_list">Deleting a list</string>
+    <string name="deleting_list_confirmation">Are you sure you want to delete list %1$s?</string>
+    <string name="add_list">Add list</string>
+    <string name="edit_list">Edit list</string>
+    <string name="list_updated">List has been updated.</string>
+    <string name="list_added">List has been added.</string>
+    <string name="no_recipes">🍲 \nYou don\'t have any recipes yet.\nStart your culinary adventure by adding your first one!</string>
+    <string name="list_name">List name</string>
+    <string name="no_ingredients_list">Your shopping list is empty.\nAdd your first item.</string>
+    <string name="list_deleted">List has been deleted.</string>
+    <string name="shopping_lists">Shopping lists</string>
+    <string name="no_shopping_lists">You don\'t have any shopping lists yet. \nStart planning by adding your first one!</string>
+    <string name="recipe_list">Recipe list</string>
+    <string name="settings">Settings</string>
+    <string name="unit_gram">g</string>
+    <string name="unit_dag">dag</string>
+    <string name="unit_kg">kg</string>
+    <string name="unit_ml">ml</string>
+    <string name="unit_liter">l</string>
+    <string name="unit_piece">pcs.</string>
+
+    <string name="unit_teaspoon_fraction">tsp</string>
+    <plurals name="unit_teaspoon">
+        <item quantity="one">tsp</item>
+        <item quantity="other">tsp</item>
+    </plurals>
+
+    <string name="unit_tablespoon_fraction">tbsp</string>
+    <plurals name="unit_tablespoon">
+        <item quantity="one">tbsp</item>
+        <item quantity="other">tbsp</item>
+    </plurals>
+
+    <string name="unit_cup_fraction">cups</string>
+    <plurals name="unit_cup">
+        <item quantity="one">cup</item>
+        <item quantity="other">cups</item>
+    </plurals>
+
+    <string name="unit_ounce_fluid_fraction">oz fl</string>
+    <plurals name="unit_ounce_fluid">
+        <item quantity="one">fl oz</item>
+        <item quantity="other">fl oz</item>
+    </plurals>
+
+    <string name="unit_ounce_weight_fraction">oz</string>
+    <string name="leave">Leave</string>
+    <string name="unsaved_changes">Unsaved changes</string>
+    <string name="unsaved_changes_desc">You have some unsaved changes. Do you really want to leave?</string>
+    <string name="favourite">Favourite</string>
+    <string name="sort_by">Sort by</string>
+    <plurals name="unit_ounce_weight">
+        <item quantity="one">oz</item>
+        <item quantity="other">oz</item>
+    </plurals>
 </resources>

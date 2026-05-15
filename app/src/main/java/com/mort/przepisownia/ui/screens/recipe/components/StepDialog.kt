@@ -12,6 +12,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.res.stringResource
+import com.mort.przepisownia.R
 
 @Composable
 fun StepDialog(
@@ -28,14 +30,14 @@ fun StepDialog(
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
-        title = { Text("Edytuj krok") },
+        title = { Text(stringResource(R.string.edit_step)) },
         text = {
             Column {
                 OutlinedTextField(
                     modifier = Modifier.focusRequester(focusRequester),
                     value = description.value,
                     onValueChange = { description.value = it },
-                    label = { Text("Krok") }
+                    label = { Text(stringResource(R.string.recipe_step)) }
                 )
             }
         },
@@ -43,12 +45,12 @@ fun StepDialog(
             TextButton(onClick = {
                 onConfirm(description.value)
             }) {
-                Text("Zapisz")
+                Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Anuluj")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

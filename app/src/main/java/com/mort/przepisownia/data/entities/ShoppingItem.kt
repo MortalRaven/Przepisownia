@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.mort.przepisownia.utils.UnitType
 
 @Entity(tableName = "shopping_items",
     foreignKeys = [ForeignKey(
@@ -22,9 +23,9 @@ data class ShoppingItem(
     @ColumnInfo(name = "item_name")
     val name: String = "",
     @ColumnInfo(name = "item_quantity")
-    val quantity: String = "",
+    val quantity: Float? = null,
     @ColumnInfo(name = "item_unit")
-    val unit: String = "",
+    val unit: UnitType? = null,
     @ColumnInfo(name = "item_is_checked")
     val isChecked: Boolean = false
 )

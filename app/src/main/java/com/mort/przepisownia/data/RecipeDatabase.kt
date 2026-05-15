@@ -15,7 +15,7 @@ import com.mort.przepisownia.data.entities.ShoppingList
 
 @Database(
     entities = [Recipe::class, Ingredient::class, RecipeStep::class, ShoppingList::class, ShoppingItem::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class RecipeDatabase: RoomDatabase() {

@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mort.przepisownia.R
 
@@ -27,7 +28,7 @@ fun MenuDropdown(menuItems: List<MenuDropdownItem>) {
         ) {
             Icon(
                 painter = painterResource(R.drawable.baseline_more_vert_24),
-                contentDescription = "Więcej opcji"
+                contentDescription = stringResource(R.string.more_options)
             )
         }
 

@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.mort.przepisownia.R
@@ -70,7 +71,7 @@ fun AppBarView(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.baseline_search_24),
-                        contentDescription = "Szukaj"
+                        contentDescription = stringResource(R.string.search)
                     )
                 }
 
@@ -79,7 +80,7 @@ fun AppBarView(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.baseline_filter_list_24),
-                        contentDescription = "Filtrowanie"
+                        contentDescription = stringResource(R.string.filter)
                     )
                 }
             }
@@ -91,12 +92,12 @@ fun AppBarView(
                     if (layoutType == ViewType.GRID) {
                         Icon(
                             painter = painterResource(R.drawable.baseline_grid_view_24),
-                            contentDescription = "Widok siatki"
+                            contentDescription = stringResource(R.string.view_grid)
                         )
                     } else {
                         Icon(
                             painter = painterResource(R.drawable.baseline_view_list_24),
-                            contentDescription = "Widok listy"
+                            contentDescription = stringResource(R.string.view_list)
                         )
                     }
                 }
@@ -107,8 +108,8 @@ fun AppBarView(
                     onClick = { onAcceptClick() }
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.baseline_search_24),
-                        contentDescription = "Zatwierdź"
+                        painter = painterResource(R.drawable.baseline_done_24),
+                        contentDescription = stringResource(R.string.accept)
                     )
                 }
             }

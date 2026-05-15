@@ -11,7 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.mort.przepisownia.R
 import kotlinx.coroutines.delay
 
 @Composable
@@ -35,7 +37,7 @@ fun SearchBarView(
             .onFocusChanged { onFocusChanged(it.isFocused) },
         value = searchQuery,
         onValueChange = onQueryChange,
-        placeholder = { Text("Szukaj przepisu...") },
+        placeholder = { Text(stringResource(R.string.search_for_recipe)) },
         singleLine = true
     )
 }

@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -83,7 +84,7 @@ fun MenuItemCard(
         ) {
             Text(
                 modifier = Modifier.weight(3f),
-                text = menuItem.title,
+                text = stringResource(menuItem.title),
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 18.sp,
                 textAlign = TextAlign.Start
@@ -100,16 +101,16 @@ fun MenuItemCard(
 }
 
 data class MenuItem(
-    val title: String,
+    val title: Int,
     val icon: Int,
     val screen: Screen,
 )
 
 object MenuList {
     val menuList = listOf(
-        MenuItem("Dodaj przepis", R.drawable.baseline_add_24, Screen.AddEditScreen),
-        MenuItem("Lista Przepisów", R.drawable.outline_menu_book_24, Screen.RecipesScreen),
-        MenuItem("Lista Zakupów", R.drawable.outline_shopping_cart_24, Screen.ShoppingScreen),
-        MenuItem("Ustawienia", R.drawable.outline_settings_24, Screen.RecipesScreen)
+        MenuItem(R.string.add_recipe, R.drawable.baseline_add_24, Screen.AddEditScreen),
+        MenuItem(R.string.recipe_list, R.drawable.outline_menu_book_24, Screen.RecipesScreen),
+        MenuItem(R.string.shopping_lists, R.drawable.outline_shopping_cart_24, Screen.ShoppingScreen),
+        MenuItem(R.string.settings, R.drawable.outline_settings_24, Screen.RecipesScreen)
     )
 }

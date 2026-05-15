@@ -4,6 +4,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.mort.przepisownia.R
 import com.mort.przepisownia.data.entities.ShoppingList
 
 @Composable
@@ -14,22 +16,22 @@ fun DeleteListDialog(
 ) {
     AlertDialog(
         onDismissRequest = { onDismiss() },
-        title = { Text("Usuwanie listy") },
-        text = { Text("Czy na pewno chcesz usunąć listę: ${shoppingList.name}?") },
+        title = { Text(stringResource(R.string.deleting_list)) },
+        text = { Text(stringResource(R.string.deleting_list_confirmation, shoppingList.name)) },
         confirmButton = {
             TextButton(
                 onClick = {
                     onConfirm(shoppingList)
                 }
             ) {
-                Text("Tak")
+                Text(stringResource(R.string.delete))
             }
         },
         dismissButton = {
             TextButton(
                 onClick = { onDismiss() }
             ) {
-                Text("Anuluj")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

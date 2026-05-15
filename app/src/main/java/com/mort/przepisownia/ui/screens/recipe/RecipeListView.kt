@@ -44,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -65,6 +66,7 @@ fun RecipeListView(
     navController: NavController,
     viewModel: RecipeViewModel
 ) {
+    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val focusManger = LocalFocusManager.current
     val gridState = rememberLazyGridState()
@@ -86,8 +88,8 @@ fun RecipeListView(
     LaunchedEffect(pendingRecipe) {
         pendingRecipe?.let {recipe ->
             val result = snackbarHostState.showSnackbar(
-                message = "Przepis został usunięty.",
-                actionLabel = "Cofnij",
+                message = context.resources.getString(R.string.recipe_deleted),
+                actionLabel = context.resources.getString(R.string.undo),
                 duration = SnackbarDuration.Short
             )
 
@@ -141,7 +143,7 @@ fun RecipeListView(
         topBar = {
             Column {
                 AppBarView(
-                    title = "Przepisy",
+                    title = stringResource(R.string.recipes),
                     onBackNavClick = { navController.navigate(Screen.HomeScreen.route) },
                     searchable = true,
                     isSearching = isSearching,
@@ -193,7 +195,7 @@ fun RecipeListView(
                     .padding(paddingValues)
             ) {
                 if (recipeList.isEmpty()) {
-                    EmptyScreen(text = "\uD83C\uDF72 \nNie masz jeszcze żadnych przepisów.\nZacznij swoją przygodę kulinarną od dodania pierwszego!")
+                    EmptyScreen(text = stringResource(R.string.no_recipes))
                 } else {
                     //Siatka zawierająca przepisy
                     Box(

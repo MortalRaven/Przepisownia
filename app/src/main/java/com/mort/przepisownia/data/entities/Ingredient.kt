@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.mort.przepisownia.utils.UnitType
 
 @Entity(tableName = "ingredients",
     foreignKeys = [ForeignKey(
@@ -22,21 +23,14 @@ data class Ingredient(
     @ColumnInfo(name = "ingredient_name")
     val name: String = "",
     @ColumnInfo(name = "ingredient_quantity")
-    val quantity: String = "",
+    val quantity: Float? = null,
     @ColumnInfo(name = "ingredient_unit")
-    val unit: String = ""
+    val unit: UnitType? = null
 )
 
-/*data class MeasurementUnits(
-    val tablespoons: List<String> = listOf("łyżeczka", "łyżeczki"),
-    val spoons: List<String> = listOf("łyżka", "łyżki"),
-    val pieces: String = "szt.",
-    val weight: List<String> = listOf("g", "dag", "kg"),
-    val liquids: List<String> = listOf("ml", "l")
-)*/
 
 data class IngredientInput(
     var name: String = "",
-    var quantity: String = "",
-    var unit: String = ""
+    var quantity: Float? = null,
+    var unit: UnitType? = null
 )

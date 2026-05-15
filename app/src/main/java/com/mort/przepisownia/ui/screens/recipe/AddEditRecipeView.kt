@@ -16,14 +16,12 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -46,9 +44,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -61,10 +59,13 @@ import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.ui.common.AppBarView
 import com.mort.przepisownia.ui.common.EditMode
 import com.mort.przepisownia.ui.common.LoadingOverlay
+import com.mort.przepisownia.utils.displayName
 import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialog
 import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialogMode
+import com.mort.przepisownia.ui.screens.recipe.components.RecipeTextField
 import com.mort.przepisownia.ui.screens.recipe.components.StepDialog
 import com.mort.przepisownia.ui.screens.recipe.components.StepDialogMode
+import com.mort.przepisownia.utils.inTextFormatter
 import com.mort.przepisownia.utils.saveImageToInternalStorage
 import kotlinx.coroutines.launch
 import java.io.File
@@ -209,7 +210,7 @@ fun AddEditRecipeView(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppBarView(
-                title = "Edycja przepisu",
+                title = stringResource(R.string.title_edit_recipe),
                 onBackNavClick = { navController.navigateUp() }
             )
         }
@@ -264,11 +265,11 @@ fun AddEditRecipeView(
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.baseline_add_circle_24),
-                                    contentDescription = "Dodaj zdjęcie"
+                                    contentDescription = stringResource(R.string.add_photo)
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Text(
-                                    text = "Dodaj zdjęcie"
+                                    text = stringResource(R.string.add_photo)
                                 )
                             }
                         }
@@ -283,25 +284,25 @@ fun AddEditRecipeView(
                         ) {
 // Dodawanie nazwy
                             RecipeTextField(
-                                label = "Nazwa przepisu",
+                                label = stringResource(R.string.recipe_name),
                                 value = viewModel.recipeNameState,
                                 onValueChanged = { viewModel.onRecipeNameChanged(it) },
                                 validatorHasErrors = viewModel.nameIsEmpty,
-                                supportingText = "Pole wymagane"
+                                supportingText = stringResource(R.string.required_field)
                             )
 // Dodawanie opisu
                             RecipeTextField(
-                                label = "Opis (opcjonalnie)",
+                                label = stringResource(R.string.description),
                                 value = viewModel.recipeDescState,
                                 onValueChanged = { viewModel.onRecipeDescChanged(it) }
                             )
 // Dodawanie linku
                             RecipeTextField(
-                                label = "Link",
+                                label = stringResource(R.string.link),
                                 value = viewModel.recipeLinkState,
                                 onValueChanged = { viewModel.onRecipeLinkChanged(it) },
                                 validatorHasErrors = viewModel.linkHasErrors,
-                                supportingText = "Nieprawidłowy link"
+                                supportingText = stringResource(R.string.invalid_link)
                             )
                         }
                     }
@@ -320,7 +321,7 @@ fun AddEditRecipeView(
                                 horizontalAlignment = Alignment.Start
                             ) {
                                 Text(
-                                    text = "Lista Składników",
+                                    text = stringResource(R.string.ingredients_list),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -331,13 +332,16 @@ fun AddEditRecipeView(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
+                                        //Ilość składnika
                                         Text(
                                             modifier = Modifier.weight(0.5f),
-                                            text = "${ingredient.quantity} ${ingredient.unit}",
+                                            text = if (ingredient.quantity != null && ingredient.unit != null) {
+                                                "${ingredient.quantity.inTextFormatter()} ${ingredient.unit?.displayName(ingredient.quantity!!)}"
+                                            } else {""},
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Bold
                                         )
-
+                                        //Składnik
                                         Text(
                                             modifier = Modifier.weight(1f),
                                             text = ingredient.name,
@@ -352,7 +356,7 @@ fun AddEditRecipeView(
                                         }) {
                                             Icon(
                                                 painter = painterResource(R.drawable.baseline_edit_24),
-                                                contentDescription = "Edytuj składnik",
+                                                contentDescription = stringResource(R.string.edit_ingredient),
                                                 tint = Color.Gray
                                             )
                                         }
@@ -362,7 +366,7 @@ fun AddEditRecipeView(
                                         }) {
                                             Icon(
                                                 painter = painterResource(R.drawable.baseline_clear_24),
-                                                contentDescription = "Usuń składnik",
+                                                contentDescription = stringResource(R.string.remove_ingredient),
                                                 tint = Color.Red
                                             )
                                         }
@@ -381,7 +385,7 @@ fun AddEditRecipeView(
                                                 !showIngredientEditDialog.value
                                         }
                                     ) {
-                                        Text("+ Nowy składnik")
+                                        Text("+ " + stringResource(R.string.new_ingredient))
                                     }
                                 }
                             }
@@ -401,7 +405,7 @@ fun AddEditRecipeView(
                                 horizontalAlignment = Alignment.Start
                             ) {
                                 Text(
-                                    text = "Przygotowanie",
+                                    text = stringResource(R.string.recipe_instructions),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -414,7 +418,7 @@ fun AddEditRecipeView(
                                     Column {
                                         Text(
                                             modifier = Modifier.padding(end = 10.dp),
-                                            text = "Krok ${index + 1}",
+                                            text = stringResource(R.string.recipe_step) + " ${index + 1}",
                                             fontSize = 16.sp,
                                             fontWeight = FontWeight.Bold
                                         )
@@ -438,7 +442,7 @@ fun AddEditRecipeView(
                                             }) {
                                                 Icon(
                                                     painter = painterResource(R.drawable.baseline_edit_24),
-                                                    contentDescription = "Edytuj krok",
+                                                    contentDescription = stringResource(R.string.edit_step),
                                                     tint = Color.Gray
                                                 )
                                             }
@@ -448,7 +452,7 @@ fun AddEditRecipeView(
                                             }) {
                                                 Icon(
                                                     painter = painterResource(R.drawable.baseline_clear_24),
-                                                    contentDescription = "Usuń krok",
+                                                    contentDescription = stringResource(R.string.remove_step),
                                                     tint = Color.Red
                                                 )
                                             }
@@ -466,7 +470,7 @@ fun AddEditRecipeView(
                                             stepDialogMode.value = StepDialogMode.ADD
                                             showStepEditDialog.value = !showStepEditDialog.value
                                         }) {
-                                        Text("+ Nowy krok")
+                                        Text("+ " + stringResource(R.string.new_step))
                                     }
                                 }
                             }
@@ -495,7 +499,7 @@ fun AddEditRecipeView(
                                         ingredients = ingredients.toList(),
                                         steps = steps.toList()
                                     )
-                                    snackMessage.value = "Przepis został zaktualizowany."
+                                    snackMessage.value = context.resources.getString(R.string.recipe_updated)
                                 } else {
                                     //Zapisanie nowego przepisu
                                     viewModel.addFullRecipe(
@@ -510,7 +514,7 @@ fun AddEditRecipeView(
                                         ingredients = ingredients.toList(),
                                         steps = steps.toList()
                                     )
-                                    snackMessage.value = "Przepis został dodany."
+                                    snackMessage.value = context.resources.getString(R.string.recipe_added)
                                 }
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
@@ -521,7 +525,7 @@ fun AddEditRecipeView(
                                 }
                             } else {
                                 //Info o konieczności wypełnienia pól
-                                snackMessage.value = "Wypełnij pola."
+                                snackMessage.value = context.resources.getString(R.string.warning_empty_fields)
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
                                         message = snackMessage.value,
@@ -532,7 +536,7 @@ fun AddEditRecipeView(
                         }
                     ) {
                         Text(
-                            text = if (id != 0L) "Zaktualizuj przepis" else "Dodaj przepis",
+                            text = if (id != 0L) stringResource(R.string.update_recipe) else stringResource(R.string.add_recipe),
                             style = TextStyle(fontSize = 18.sp),
                             fontWeight = FontWeight.ExtraBold
                         )
@@ -541,27 +545,4 @@ fun AddEditRecipeView(
             }
         }
     }
-}
-
-@Composable
-fun RecipeTextField(
-    label: String,
-    value: String,
-    onValueChanged: (String) -> Unit,
-    validatorHasErrors: Boolean = false,
-    supportingText: String = ""
-) {
-    OutlinedTextField(
-        modifier = Modifier.fillMaxWidth(),
-        value = value,
-        onValueChange = onValueChanged,
-        label = { Text(text = label) },
-        isError = validatorHasErrors,
-        supportingText = {
-            if (validatorHasErrors) {
-                Text(text = supportingText)
-            }
-        },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
-    )
 }

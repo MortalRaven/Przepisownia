@@ -1,6 +1,5 @@
 package com.mort.przepisownia.ui.screens.shopping
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,11 +22,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.mort.przepisownia.R
 import com.mort.przepisownia.data.entities.ListWithItems
 import com.mort.przepisownia.data.entities.ShoppingItem
 import com.mort.przepisownia.data.entities.ShoppingList
@@ -35,7 +36,9 @@ import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.ui.common.AppBarView
 import com.mort.przepisownia.ui.common.MenuDropdownItem
 import com.mort.przepisownia.ui.screens.shopping.components.DeleteListDialog
+import com.mort.przepisownia.utils.displayName
 import com.mort.przepisownia.utils.formatDate
+import com.mort.przepisownia.utils.inTextFormatter
 
 @Composable
 fun ShoppingDetailsView(
@@ -77,13 +80,13 @@ fun ShoppingDetailsView(
                 onBackNavClick = { navController.navigateUp() },
                 dropdownMenuItems = listOf(
                     MenuDropdownItem(
-                        text = "Edytuj",
+                        text = stringResource(R.string.edit),
                         action = {
                             navController.navigate(Screen.AddEditListScreen.route + "/${fullList.value.shoppingList.id}")
                         }
                     ),
                     MenuDropdownItem(
-                        text = "Usuń",
+                        text = stringResource(R.string.delete),
                         action = {
                             showDeleteListDialog.value = !showDeleteListDialog.value
                         }
@@ -128,10 +131,10 @@ fun ShoppingDetailsView(
                                 textDecoration = if (item.isChecked) TextDecoration.LineThrough else TextDecoration.None,
                                 color = if (item.isChecked) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.onBackground
                             )
-                            if (item.quantity.isNotBlank() && item.unit.isNotBlank()) {
+                            if (item.quantity != null && item.unit != null) {
                                 Text(
                                     modifier = Modifier.weight(0.5f),
-                                    text = "${item.quantity} ${item.unit}",
+                                    text = "${item.quantity.inTextFormatter()} ${item.unit.displayName(item.quantity)}",
                                     fontSize = 18.sp,
                                     textAlign = TextAlign.End,
                                     textDecoration = if (item.isChecked) TextDecoration.LineThrough else TextDecoration.None,

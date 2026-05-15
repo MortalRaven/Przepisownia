@@ -23,7 +23,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mort.przepisownia.R
@@ -38,6 +40,7 @@ fun ShoppingListView(
     navController: NavController,
     viewModel: ShoppingViewModel,
 ) {
+    val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
     val sortType by viewModel.sortType.collectAsState()
@@ -50,8 +53,8 @@ fun ShoppingListView(
     LaunchedEffect(pendingList) {
         pendingList?.let { list ->
             val result = snackbarHostState.showSnackbar(
-                message = "Lista została usunięta.",
-                actionLabel = "Cofnij",
+                message = context.resources.getString(R.string.list_deleted),
+                actionLabel = context.resources.getString(R.string.undo),
                 duration = SnackbarDuration.Short
             )
 
@@ -88,7 +91,7 @@ fun ShoppingListView(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             AppBarView(
-                title = "Listy Zakupów",
+                title = stringResource(R.string.shopping_lists),
                 onBackNavClick = { navController.navigate(Screen.HomeScreen.route) }
             )
         },
@@ -113,7 +116,7 @@ fun ShoppingListView(
                     .padding(8.dp)
             ) {
                 if (shoppingLists.isEmpty()) {
-                    EmptyScreen(text = "Nie masz jeszcze żadnych list zakupowych. \nRozpocznij planowanie dodając pierwszą!")
+                    EmptyScreen(text = stringResource(R.string.no_shopping_lists))
                 } else {
                     Box(
                         modifier = Modifier.fillMaxSize()

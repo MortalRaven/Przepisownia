@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Przepisownia</string>
+    <string name="update_recipe">Zaktualizuj przepis</string>
+    <string name="add_recipe">Dodaj przepis</string>
+    <string name="title_edit_recipe">Edycja przepisu</string>
+    <string name="add_photo">Dodaj zdjęcie</string>
+    <string name="required_field">Pole wymagane</string>
+    <string name="recipe_name">Nazwa przepisu</string>
+    <string name="description">Opis</string>
+    <string name="link">Link</string>
+    <string name="invalid_link">Nieprawidłowy link</string>
+    <string name="ingredients_list">Lista składników</string>
+    <string name="edit_ingredient">Edytuj składnik</string>
+    <string name="remove_ingredient">Usuń składnik</string>
+    <string name="new_ingredient">Nowy składnik</string>
+    <string name="recipe_instructions">Przygotowanie</string>
+    <string name="recipe_step">Krok</string>
+    <string name="edit_step">Edytuj krok</string>
+    <string name="remove_step">Usuń krok</string>
+    <string name="new_step">Nowy krok</string>
+    <string name="recipe_updated">Przepis został zaktualizowany.</string>
+    <string name="recipe_added">Przepis został dodany.</string>
+    <string name="warning_empty_fields">Wypełnij wszystkie wymagane pola.</string>
+    <string name="edit">Edytuj</string>
+    <string name="delete">Usuń</string>
+    <string name="recipe_added_favourite">Dodano przepis do ulubionych.</string>
+    <string name="recipe_removed_favourite">Usunięto przepis z ulubionych.</string>
+    <string name="date_added">Data dodania: %1$s</string>
+    <string name="ingredients">Składniki</string>
+    <string name="recipe">Przepis</string>
+    <string name="search">Szukaj</string>
+    <string name="filter">Filtrowanie</string>
+    <string name="view_grid">Widok siatki</string>
+    <string name="view_list">Widok listy</string>
+    <string name="accept">Zatwierdź</string>
+    <string name="more_options">Więcej opcji</string>
+    <string name="yes">Tak</string>
+    <string name="cancel">Anuluj</string>
+    <string name="deleting_recipe">Usuwanie przepisu</string>
+    <string name="deleting_recipe_confirmation">Czy na pewno chcesz usunąć przepis %1$s?</string>
+    <string name="show_favourites">Pokaż ulubione</string>
+    <string name="apply">Zastosuj</string>
+    <string name="clear_filters">Wyczyść filtry</string>
+    <string name="sort_date_added_asc">Data dodania: rosnąco</string>
+    <string name="sort_date_added_desc">Data dodania: malejąco</string>
+    <string name="sort_date_viewed_asc">Ostatnio oglądane: rosnąco</string>
+    <string name="sort_date_viewed_desc">Ostatnio oglądane: malejąco</string>
+    <string name="sort_alphabet_asc">A-Z</string>
+    <string name="sort_alphabet_desc">Z-A</string>
+    <string name="ingredient">Składnik</string>
+    <string name="quantity">Ilość</string>
+    <string name="unit">Jednostka</string>
+    <string name="save">Zapisz</string>
+    <string name="search_for_recipe">Szukaj przepisu…</string>
+    <string name="recipe_deleted">Przepis został usunięty.</string>
+    <string name="undo">Cofnij</string>
+    <string name="recipes">Przepisy</string>
+    <string name="deleting_list">Usuwanie listy</string>
+    <string name="deleting_list_confirmation">Czy na pewno chcesz usunąć listę %1$s?</string>
+    <string name="add_list">Dodaj listę</string>
+    <string name="edit_list">Edytuj listę</string>
+    <string name="list_updated">Lista została zaktualizowana.</string>
+    <string name="list_added">Lista została dodana.</string>
+    <string name="no_recipes">🍲 \nNie masz jeszcze żadnych przepisów.\nZacznij swoją przygodę kulinarną od dodania pierwszego!</string>
+    <string name="list_name">Nazwa listy</string>
+    <string name="no_ingredients_list">Lista zakupów jest pusta.\nDodaj pierwszy przedmiot.</string>
+    <string name="list_deleted">Lista została usunięta.</string>
+    <string name="shopping_lists">Listy zakupów</string>
+    <string name="no_shopping_lists">Nie masz jeszcze żadnych list zakupowych. \nRozpocznij planowanie dodając pierwszą!</string>
+    <string name="recipe_list">Lista przepisów</string>
+    <string name="settings">Ustawienia</string>
+    <string name="unit_gram">g</string>
+    <string name="unit_dag">dag</string>
+    <string name="unit_kg">kg</string>
+    <string name="unit_ml">ml</string>
+    <string name="unit_liter">l</string>
+    <string name="unit_piece">szt.</string>
+
+    <string name="unit_teaspoon_fraction">łyżeczki</string>
+    <plurals name="unit_teaspoon">
+        <item quantity="one">łyżeczka</item>
+        <item quantity="few">łyżeczki</item>
+        <item quantity="many">łyżeczek</item>
+        <item quantity="other">łyżeczki</item>
+    </plurals>
+
+    <string name="unit_tablespoon_fraction">łyżki</string>
+    <plurals name="unit_tablespoon">
+        <item quantity="one">łyżka</item>
+        <item quantity="few">łyżki</item>
+        <item quantity="many">łyżek</item>
+        <item quantity="other">łyżki</item>
+    </plurals>
+
+    <string name="unit_cup_fraction">szklanki</string>
+    <plurals name="unit_cup">
+        <item quantity="one">szklanka</item>
+        <item quantity="few">szklanki</item>
+        <item quantity="many">szklanek</item>
+        <item quantity="other">szklanki</item>
+    </plurals>
+
+    <string name="unit_ounce_fluid_fraction">uncji</string>
+    <plurals name="unit_ounce_fluid">
+        <item quantity="one">uncja</item>
+        <item quantity="few">uncje</item>
+        <item quantity="many">uncji</item>
+        <item quantity="other">uncji</item>
+    </plurals>
+
+    <string name="unit_ounce_weight_fraction">uncji</string>
+    <string name="leave">Opuść</string>
+    <plurals name="unit_ounce_weight">
+        <item quantity="one">uncja</item>
+        <item quantity="few">uncje</item>
+        <item quantity="many">uncji</item>
+        <item quantity="other">uncji</item>
+    </plurals>
+    <string name="unsaved_changes">Niezapisane zmiany</string>
+    <string name="unsaved_changes_desc">Posiadasz niezapisane zmiany. Czy na pewno chcesz wyjść?</string>
+    <string name="favourite">Ulubione</string>
+    <string name="sort_by">Sortuj według</string>
+</resources>

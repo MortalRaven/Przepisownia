@@ -34,8 +34,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -48,9 +50,11 @@ import com.mort.przepisownia.data.entities.ShoppingList
 import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.ui.common.AppBarView
 import com.mort.przepisownia.ui.common.EditMode
-import com.mort.przepisownia.ui.screens.recipe.RecipeTextField
+import com.mort.przepisownia.utils.displayName
 import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialog
 import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialogMode
+import com.mort.przepisownia.ui.screens.recipe.components.RecipeTextField
+import com.mort.przepisownia.utils.inTextFormatter
 import kotlinx.coroutines.launch
 
 @Composable
@@ -60,6 +64,7 @@ fun AddEditListScreen(
     navController: NavController,
     viewModel: ShoppingViewModel
 ) {
+    val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val snackMessage = remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
@@ -138,7 +143,7 @@ fun AddEditListScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppBarView(
-                title = if (mode == EditMode.ADD) "Dodaj listę" else "Edytuj listę",
+                title = if (mode == EditMode.ADD) stringResource(R.string.add_list) else stringResource(R.string.edit_list),
                 onBackNavClick = { navController.navigateUp() },
                 acceptable = true,
                 onAcceptClick = {
@@ -153,7 +158,7 @@ fun AddEditListScreen(
                                 ),
                                 itemsInput = ingredients.toList()
                             )
-                            snackMessage.value = "Lista została zaktualizowana."
+                            snackMessage.value = context.resources.getString(R.string.list_updated)
                         } else {
                             viewModel.addList(
                                 list = ShoppingList(
@@ -162,7 +167,7 @@ fun AddEditListScreen(
                                 ),
                                 itemsInput = ingredients.toList()
                             )
-                            snackMessage.value = "Lista została dodana."
+                            snackMessage.value = context.resources.getString(R.string.list_added)
                         }
                         scope.launch {
                             snackbarHostState.showSnackbar(
@@ -172,7 +177,7 @@ fun AddEditListScreen(
                             navController.navigate(Screen.ShoppingScreen.route)
                         }
                     } else {
-                        snackMessage.value = "Wypełnij pola."
+                        snackMessage.value = context.resources.getString(R.string.warning_empty_fields)
                         scope.launch {
                             snackbarHostState.showSnackbar(
                                 message = snackMessage.value,
@@ -209,7 +214,7 @@ fun AddEditListScreen(
         ) {
             item {
                 RecipeTextField(
-                    label = "Nazwa listy",
+                    label = stringResource(R.string.list_name),
                     value = viewModel.listNameState,
                     onValueChanged = { viewModel.onListNameChange(it) }
                 )
@@ -230,7 +235,7 @@ fun AddEditListScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "Lista zakupów jest pusta.\nDodaj pierwszy przedmiot.",
+                            text = stringResource(R.string.no_ingredients_list),
                             fontSize = 20.sp
                         )
                     }
@@ -267,7 +272,9 @@ fun AddEditListScreen(
 
                                 Text(
                                     modifier = Modifier.weight(0.5f),
-                                    text = "${item.quantity} ${item.unit}",
+                                    text = if (item.quantity != null && item.unit != null) {
+                                        "${item.quantity.inTextFormatter()} ${item.unit?.displayName(item.quantity!!)}"
+                                    } else {""},
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
                                     textAlign = TextAlign.End
@@ -281,7 +288,7 @@ fun AddEditListScreen(
                                 }) {
                                     Icon(
                                         painter = painterResource(R.drawable.baseline_clear_24),
-                                        contentDescription = "Usuń składnik",
+                                        contentDescription = stringResource(R.string.remove_ingredient),
                                         tint = Color.Red
                                     )
                                 }

@@ -1,5 +1,6 @@
 package com.mort.przepisownia.ui.screens.recipe.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.KeyboardActions
@@ -19,23 +20,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.mort.przepisownia.R
 import com.mort.przepisownia.data.entities.IngredientInput
+import com.mort.przepisownia.utils.UnitType
+import com.mort.przepisownia.utils.displayName
 
+@SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IngredientDialog(
     ingredient: IngredientInput,
     onDismiss: () -> Unit,
-    onConfirm: (IngredientInput) -> Unit
+    onConfirm: (IngredientInput) -> Unit,
 ) {
+    val context = LocalContext.current
     val name = remember { mutableStateOf(ingredient.name) }
-    val quantity = remember { mutableStateOf(ingredient.quantity) }
+    val quantity = remember { mutableStateOf(ingredient.quantity?.toString() ?: "") }
     val unit = remember { mutableStateOf(ingredient.unit) }
-    val unitList = listOf("g", "dag", "kg", "ml", "l", "łyżeczka", "łyżka", "szklanka", "szt.")
+    val unitList = UnitType.entries
 
     val expanded = remember { mutableStateOf(false) }
 
@@ -49,25 +57,40 @@ fun IngredientDialog(
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
-        title = { Text("Edytuj składnik") },
+        title = { Text(stringResource(R.string.edit_ingredient)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                //Pole do wprowadzania nazwy składnika
                 OutlinedTextField(
                     modifier = Modifier.focusRequester(nameFocusRequester),
                     value = name.value,
                     onValueChange = { name.value = it },
-                    label = { Text("Składnik") },
+                    label = { Text(stringResource(R.string.ingredient)) },
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(
                         onNext = { qtyFocusRequester.requestFocus() }
                     )
                 )
+                //Pole do wprowadzania ilości składnika
                 OutlinedTextField(
                     modifier = Modifier.focusRequester(qtyFocusRequester),
                     value = quantity.value,
-                    onValueChange = { quantity.value = it },
-                    label = { Text("Ilość") },
-                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next, keyboardType = KeyboardType.Number),
+                    onValueChange = {
+                        if (it.isEmpty()) {
+                            quantity.value = it
+                        } else {
+                            quantity.value = when (it.toDoubleOrNull()) {
+                                null -> quantity.value
+                                else -> it
+                            }
+                        }
+                    },
+                    label = { Text(stringResource(R.string.quantity)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Next,
+                        keyboardType = KeyboardType.Number
+                    ),
                     keyboardActions = KeyboardActions(
                         onNext = {
                             focusManager.clearFocus()
@@ -75,16 +98,17 @@ fun IngredientDialog(
                         }
                     )
                 )
+                //Rozwijana lista z jednostkami miary
                 ExposedDropdownMenuBox(
                     expanded = expanded.value,
                     onExpandedChange = { expanded.value = !expanded.value }
                 ) {
                     OutlinedTextField(
                         modifier = Modifier.menuAnchor(),
-                        value = unit.value,
+                        value = unit.value?.displayName(1F) ?: "",
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Jednostka") },
+                        label = { context.resources.getString(R.string.unit) },
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value)
                         }
@@ -95,7 +119,7 @@ fun IngredientDialog(
                     ) {
                         unitList.forEach { option ->
                             DropdownMenuItem(
-                                text = { Text(option) },
+                                text = { Text(option.displayName(1F)) },
                                 onClick = {
                                     unit.value = option
                                     expanded.value = false
@@ -108,14 +132,20 @@ fun IngredientDialog(
         },
         confirmButton = {
             TextButton(onClick = {
-                onConfirm(IngredientInput(name.value, quantity.value, unit.value))
+                onConfirm(
+                    IngredientInput(
+                        name.value,
+                        quantity.value.toFloatOrNull(),
+                        unit.value
+                    )
+                )
             }) {
-                Text("Zapisz")
+                Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Anuluj")
+                Text(stringResource(R.string.cancel))
             }
         }
     )
