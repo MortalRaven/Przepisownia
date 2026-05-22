@@ -34,7 +34,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -67,7 +66,6 @@ import com.mort.przepisownia.ui.screens.recipe.components.StepDialog
 import com.mort.przepisownia.ui.screens.recipe.components.StepDialogMode
 import com.mort.przepisownia.utils.inTextFormatter
 import com.mort.przepisownia.utils.saveImageToInternalStorage
-import kotlinx.coroutines.launch
 import java.io.File
 
 @Composable
@@ -92,8 +90,6 @@ fun AddEditRecipeView(
         }
     //Snackbar
     val snackbarHostState = remember { SnackbarHostState() }
-    val snackMessage = remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
 
     //Obsługa focusu
     val focusManager = LocalFocusManager.current
@@ -108,11 +104,11 @@ fun AddEditRecipeView(
             ingredients = listOf(),
             steps = listOf()
         )
-    )
+    ).value
 
     val initialized = remember { mutableStateOf(false) }
 
-    LaunchedEffect(mode, recipeDetails.value) {
+    LaunchedEffect(mode, recipeDetails) {
         if (!initialized.value) {
             when (mode) {
                 EditMode.ADD -> {
@@ -125,27 +121,43 @@ fun AddEditRecipeView(
                 }
 
                 EditMode.EDIT -> {
-                    if (recipeDetails.value.recipe.id == 0L) {
+                    if (recipeDetails.recipe.id == 0L) {
                         return@LaunchedEffect
                     } else {
-                        viewModel.recipeNameState = recipeDetails.value.recipe.name
-                        viewModel.recipeDescState = recipeDetails.value.recipe.desc
-                        viewModel.recipeFavState = recipeDetails.value.recipe.isFavourite
-                        viewModel.recipeImageState = recipeDetails.value.recipe.imagePath
-                        viewModel.recipeLinkState = recipeDetails.value.recipe.link
+                        viewModel.recipeId = recipeDetails.recipe.id
+                        viewModel.recipeNameState = recipeDetails.recipe.name
+                        viewModel.recipeDescState = recipeDetails.recipe.desc
+                        viewModel.recipeFavState = recipeDetails.recipe.isFavourite
+                        viewModel.recipeImageState = recipeDetails.recipe.imagePath
+                        viewModel.recipeLinkState = recipeDetails.recipe.link
+                        viewModel.recipeCreatedAt = recipeDetails.recipe.createdAt
+                        viewModel.recipeLastViewed = recipeDetails.recipe.lastViewedAt
 
                         ingredients.clear()
-                        ingredients.addAll(recipeDetails.value.ingredients.map {
+                        ingredients.addAll(recipeDetails.ingredients.map {
                             IngredientInput(name = it.name, quantity = it.quantity, unit = it.unit)
                         })
 
                         steps.clear()
-                        steps.addAll(recipeDetails.value.steps.map { it.description })
+                        steps.addAll(recipeDetails.steps.map { it.description })
                         viewModel.isRecipeLoading = false
                     }
                 }
             }
             initialized.value = true
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect {event ->
+            when (event) {
+                is RecipeEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(message = context.getString(event.message), duration = SnackbarDuration.Short)
+                }
+                RecipeEvent.NavigateBack -> {
+                    navController.navigate(Screen.RecipesScreen.route)
+                }
+            }
         }
     }
 
@@ -484,55 +496,11 @@ fun AddEditRecipeView(
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RectangleShape,
                         onClick = {
-                            if (!viewModel.nameIsEmpty && !viewModel.linkHasErrors) {
-                                if (id != 0L) {
-                                    //Aktualizacja przepisu
-                                    viewModel.updateRecipe(
-                                        Recipe(
-                                            id = id,
-                                            name = viewModel.recipeNameState.trim(),
-                                            desc = viewModel.recipeDescState.trim(),
-                                            isFavourite = viewModel.recipeFavState,
-                                            imagePath = viewModel.recipeImageState,
-                                            link = viewModel.recipeLinkState.trim()
-                                        ),
-                                        ingredients = ingredients.toList(),
-                                        steps = steps.toList()
-                                    )
-                                    snackMessage.value = context.resources.getString(R.string.recipe_updated)
-                                } else {
-                                    //Zapisanie nowego przepisu
-                                    viewModel.addFullRecipe(
-                                        recipe = Recipe(
-                                            name = viewModel.recipeNameState.trim(),
-                                            desc = viewModel.recipeDescState.trim(),
-                                            isFavourite = viewModel.recipeFavState,
-                                            imagePath = viewModel.recipeImageState,
-                                            link = viewModel.recipeLinkState.trim(),
-                                            createdAt = System.currentTimeMillis()
-                                        ),
-                                        ingredients = ingredients.toList(),
-                                        steps = steps.toList()
-                                    )
-                                    snackMessage.value = context.resources.getString(R.string.recipe_added)
-                                }
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = snackMessage.value,
-                                        duration = SnackbarDuration.Short
-                                    )
-                                    navController.navigate(Screen.RecipesScreen.route)
-                                }
-                            } else {
-                                //Info o konieczności wypełnienia pól
-                                snackMessage.value = context.resources.getString(R.string.warning_empty_fields)
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = snackMessage.value,
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
-                            }
+                            viewModel.saveRecipe(
+                                mode = mode,
+                                ingredients = ingredients.toList(),
+                                steps = steps.toList()
+                            )
                         }
                     ) {
                         Text(

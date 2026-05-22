@@ -1,21 +1,27 @@
 package com.mort.przepisownia.ui.screens.shopping
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mort.przepisownia.R
 import com.mort.przepisownia.data.Graph
 import com.mort.przepisownia.data.entities.IngredientInput
 import com.mort.przepisownia.data.entities.ListWithItems
 import com.mort.przepisownia.data.entities.ShoppingList
 import com.mort.przepisownia.data.repository.ShoppingRepository
+import com.mort.przepisownia.ui.common.EditMode
 import com.mort.przepisownia.ui.screens.recipe.components.SortType
+import com.mort.przepisownia.utils.formatDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -24,8 +30,12 @@ class ShoppingViewModel(
     private val shoppingRepository: ShoppingRepository = Graph.shoppingRepository,
 ): ViewModel() {
 
+    private val _events = MutableSharedFlow<ShoppingListEvent>()
+    val events = _events.asSharedFlow()
+
+    var listId by mutableLongStateOf(0L)
     var listNameState by mutableStateOf("")
-    var listCreatedState by mutableStateOf(0L)
+    var listCreatedState by mutableLongStateOf(0L)
 
     var isDbLoading by mutableStateOf(true)
     var isListLoading by mutableStateOf(true)
@@ -64,12 +74,56 @@ class ShoppingViewModel(
         }
     }
 
-    fun addList(
+    fun saveList(
+        mode: EditMode,
+        itemsInput: List<IngredientInput>
+    ) {
+        viewModelScope.launch {
+            if (itemsInput.isEmpty()) {
+                _events.emit(ShoppingListEvent.ShowSnackbar(R.string.warning_empty_fields))
+                return@launch
+            }
+
+            if (mode == EditMode.EDIT) {
+                updateList(
+                    list = ShoppingList(
+                        id = listId,
+                        name = listNameState.trim(),
+                        createdAt = listCreatedState,
+                        lastEdited = System.currentTimeMillis()
+                    ),
+                    itemsInput = itemsInput
+                )
+                _events.emit(ShoppingListEvent.ShowSnackbar(R.string.list_updated))
+                _events.emit(ShoppingListEvent.NavigateBack)
+            } else {
+                addList(
+                    list = ShoppingList(
+                        name = if (listNameState.isEmpty()) formatDate(System.currentTimeMillis()) else listNameState.trim(),
+                    ),
+                    itemsInput = itemsInput
+                )
+                _events.emit(ShoppingListEvent.ShowSnackbar(R.string.list_added))
+                _events.emit(ShoppingListEvent.NavigateBack)
+            }
+        }
+    }
+
+    private fun addList(
         list: ShoppingList,
         itemsInput: List<IngredientInput>,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             shoppingRepository.addFullList(list, itemsInput)
+        }
+    }
+
+    private fun updateList(
+        list: ShoppingList,
+        itemsInput: List<IngredientInput>
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            shoppingRepository.updateRecipe(list, itemsInput)
         }
     }
 
@@ -84,15 +138,6 @@ class ShoppingViewModel(
     fun deleteList(list: ShoppingList) {
         viewModelScope.launch(Dispatchers.IO) {
             shoppingRepository.deleteList(list)
-        }
-    }
-
-    fun updateList(
-        list: ShoppingList,
-        itemsInput: List<IngredientInput>
-    ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            shoppingRepository.updateRecipe(list, itemsInput)
         }
     }
 
@@ -113,4 +158,10 @@ class ShoppingViewModel(
     fun onListNameChange(newString: String) {
         listNameState = newString
     }
+}
+
+sealed class ShoppingListEvent {
+    data class ShowSnackbar(val message: Int): ShoppingListEvent()
+    //data class NavigateToList(val id: Long): ShoppingListEvent()
+    object NavigateBack: ShoppingListEvent()
 }

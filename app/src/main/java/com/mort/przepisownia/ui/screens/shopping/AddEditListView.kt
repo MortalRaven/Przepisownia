@@ -29,7 +29,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,7 +54,6 @@ import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialog
 import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialogMode
 import com.mort.przepisownia.ui.screens.recipe.components.RecipeTextField
 import com.mort.przepisownia.utils.inTextFormatter
-import kotlinx.coroutines.launch
 
 @Composable
 fun AddEditListScreen(
@@ -66,8 +64,6 @@ fun AddEditListScreen(
 ) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
-    val snackMessage = remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
 
     val focusManager = LocalFocusManager.current
 
@@ -78,25 +74,26 @@ fun AddEditListScreen(
             shoppingList = ShoppingList(0L, "", 0L, null),
             shoppingItems = listOf()
         )
-    )
+    ).value
 
     val initialized = remember { mutableStateOf(false) }
 
-    LaunchedEffect(mode, fullList.value) {
+    LaunchedEffect(mode, fullList) {
         if (!initialized.value) {
             when (mode) {
                 EditMode.ADD -> {
                     viewModel.listNameState = ""
                 }
                 EditMode.EDIT -> {
-                    if (fullList.value.shoppingList.id == 0L) {
+                    if (fullList.shoppingList.id == 0L) {
                         return@LaunchedEffect
                     } else {
-                        viewModel.listNameState = fullList.value.shoppingList.name
-                        viewModel.listCreatedState = fullList.value.shoppingList.createdAt
+                        viewModel.listId = fullList.shoppingList.id
+                        viewModel.listNameState = fullList.shoppingList.name
+                        viewModel.listCreatedState = fullList.shoppingList.createdAt
 
                         ingredients.clear()
-                        ingredients.addAll(fullList.value.shoppingItems.map {
+                        ingredients.addAll(fullList.shoppingItems.map {
                             IngredientInput(name = it.name, quantity = it.quantity, unit = it.unit)
                         })
 
@@ -105,6 +102,19 @@ fun AddEditListScreen(
                 }
             }
             initialized.value = true
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect {event ->
+            when (event) {
+                is ShoppingListEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(message = context.getString(event.message), duration = SnackbarDuration.Short)
+                }
+                is ShoppingListEvent.NavigateBack -> {
+                    navController.navigate(Screen.ShoppingScreen.route)
+                }
+            }
         }
     }
 
@@ -147,44 +157,10 @@ fun AddEditListScreen(
                 onBackNavClick = { navController.navigateUp() },
                 acceptable = true,
                 onAcceptClick = {
-                    if (ingredients.isNotEmpty()) {
-                        if (mode == EditMode.EDIT) {
-                            viewModel.updateList(
-                                ShoppingList(
-                                    id = id,
-                                    name = viewModel.listNameState.trim(),
-                                    createdAt = viewModel.listCreatedState,
-                                    lastEdited = System.currentTimeMillis()
-                                ),
-                                itemsInput = ingredients.toList()
-                            )
-                            snackMessage.value = context.resources.getString(R.string.list_updated)
-                        } else {
-                            viewModel.addList(
-                                list = ShoppingList(
-                                    name = viewModel.listNameState.trim(),
-                                    createdAt = System.currentTimeMillis()
-                                ),
-                                itemsInput = ingredients.toList()
-                            )
-                            snackMessage.value = context.resources.getString(R.string.list_added)
-                        }
-                        scope.launch {
-                            snackbarHostState.showSnackbar(
-                                message = snackMessage.value,
-                                duration = SnackbarDuration.Short
-                            )
-                            navController.navigate(Screen.ShoppingScreen.route)
-                        }
-                    } else {
-                        snackMessage.value = context.resources.getString(R.string.warning_empty_fields)
-                        scope.launch {
-                            snackbarHostState.showSnackbar(
-                                message = snackMessage.value,
-                                duration = SnackbarDuration.Short
-                            )
-                        }
-                    }
+                    viewModel.saveList(
+                        mode = mode,
+                        itemsInput = ingredients.toList()
+                    )
                 }
             )
         },
