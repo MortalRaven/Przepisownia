@@ -1,9 +1,11 @@
 package com.mort.przepisownia.ui.screens.recipe
 
 import android.content.Context
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -40,14 +42,18 @@ class RecipeViewModel(
     private val _recipesLayout = MutableStateFlow(ViewType.GRID)
     val recipesLayout: StateFlow<ViewType> = _recipesLayout.asStateFlow()
 
+    private var initialized = false
+
     var recipeId by mutableLongStateOf(0L)
     var recipeNameState by mutableStateOf("")
     var recipeDescState by mutableStateOf("")
-    var recipeFavState by mutableStateOf(false)
+    private var recipeFavState by mutableStateOf(false)
     var recipeImageState by mutableStateOf("")
     var recipeLinkState by mutableStateOf("")
-    var recipeCreatedAt by mutableLongStateOf(0L)
-    var recipeLastViewed: Long? by mutableStateOf(null)
+    private var recipeCreatedAt by mutableLongStateOf(0L)
+    private var recipeLastViewed: Long? by mutableStateOf(null)
+    val ingredients = mutableStateListOf<IngredientInput>()
+    val steps = mutableStateListOf<String>()
 
     val nameIsEmpty by derivedStateOf {
         recipeNameState.isEmpty()
@@ -135,8 +141,75 @@ class RecipeViewModel(
         return recipeRepository.getRecipeByID(id)
     }
 
-    fun getRecipeDetails(recipeId: Long): Flow<RecipeWithDetails> {
+    fun getRecipeDetails(recipeId: Long): Flow<RecipeWithDetails?> {
         return recipeRepository.getRecipeDetails(recipeId)
+    }
+
+    fun loadRecipeToRead(recipeId: Long) {
+        getRecipeDetails(recipeId)
+    }
+
+    fun initializeRecipe(
+        mode: EditMode,
+        recipeDetails: RecipeWithDetails?
+    ) {
+        if (initialized) return
+
+        when (mode) {
+            EditMode.ADD -> {
+                clearRecipeForm()
+            }
+
+            EditMode.EDIT -> {
+                if (recipeDetails == null) return
+
+                if (recipeDetails.recipe.id == 0L) return
+
+                recipeId = recipeDetails.recipe.id
+                recipeNameState = recipeDetails.recipe.name
+                recipeDescState = recipeDetails.recipe.desc
+                recipeFavState = recipeDetails.recipe.isFavourite
+                recipeImageState = recipeDetails.recipe.imagePath
+                recipeLinkState = recipeDetails.recipe.link
+                recipeCreatedAt = recipeDetails.recipe.createdAt
+                recipeLastViewed = recipeDetails.recipe.lastViewedAt
+
+                ingredients.clear()
+                ingredients.addAll(
+                    recipeDetails.ingredients.map {
+                        IngredientInput(
+                            name = it.name,
+                            quantity = it.quantity,
+                            unit = it.unit
+                        )
+                    }
+                )
+
+                steps.clear()
+                steps.addAll(
+                    recipeDetails.steps.map { it.description }
+                )
+
+                isRecipeLoading = false
+            }
+        }
+
+        initialized = true
+    }
+
+    fun clearRecipeForm() {
+        recipeId = 0L
+        recipeNameState = ""
+        recipeDescState = ""
+        recipeFavState = false
+        recipeImageState = ""
+        recipeLinkState = ""
+        recipeCreatedAt = 0L
+        recipeLastViewed = null
+        ingredients.clear()
+        steps.clear()
+        isRecipeLoading = false
+        initialized = false
     }
 
     fun saveRecipe(

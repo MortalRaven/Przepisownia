@@ -31,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -52,8 +51,6 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mort.przepisownia.R
 import com.mort.przepisownia.data.entities.IngredientInput
-import com.mort.przepisownia.data.entities.Recipe
-import com.mort.przepisownia.data.entities.RecipeWithDetails
 import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.ui.common.AppBarView
 import com.mort.przepisownia.ui.common.EditMode
@@ -92,58 +89,14 @@ fun AddEditRecipeView(
     //Obsługa focusu
     val focusManager = LocalFocusManager.current
 
-    //Przepis, składniki, kroki
-    val ingredients = remember { mutableStateListOf<IngredientInput>() }
-    val steps = remember { mutableStateListOf<String>() }
-
-    val recipeDetails = viewModel.getRecipeDetails(id).collectAsState(
-        initial = RecipeWithDetails(
-            recipe = Recipe(0L, "", "", false, "", ""),
-            ingredients = listOf(),
-            steps = listOf()
-        )
-    ).value
-
-    val initialized = remember { mutableStateOf(false) }
+    val recipeDetails = viewModel.getRecipeDetails(id).collectAsState(initial = null).value
 
     LaunchedEffect(mode, recipeDetails) {
-        if (!initialized.value) {
-            when (mode) {
-                EditMode.ADD -> {
-                    viewModel.recipeNameState = ""
-                    viewModel.recipeDescState = ""
-                    viewModel.recipeFavState = false
-                    viewModel.recipeImageState = ""
-                    viewModel.recipeLinkState = ""
-                    viewModel.isRecipeLoading = false
-                }
-
-                EditMode.EDIT -> {
-                    if (recipeDetails.recipe.id == 0L) {
-                        return@LaunchedEffect
-                    } else {
-                        viewModel.recipeId = recipeDetails.recipe.id
-                        viewModel.recipeNameState = recipeDetails.recipe.name
-                        viewModel.recipeDescState = recipeDetails.recipe.desc
-                        viewModel.recipeFavState = recipeDetails.recipe.isFavourite
-                        viewModel.recipeImageState = recipeDetails.recipe.imagePath
-                        viewModel.recipeLinkState = recipeDetails.recipe.link
-                        viewModel.recipeCreatedAt = recipeDetails.recipe.createdAt
-                        viewModel.recipeLastViewed = recipeDetails.recipe.lastViewedAt
-
-                        ingredients.clear()
-                        ingredients.addAll(recipeDetails.ingredients.map {
-                            IngredientInput(name = it.name, quantity = it.quantity, unit = it.unit)
-                        })
-
-                        steps.clear()
-                        steps.addAll(recipeDetails.steps.map { it.description })
-                        viewModel.isRecipeLoading = false
-                    }
-                }
-            }
-            initialized.value = true
+        if (mode == EditMode.EDIT && recipeDetails == null) {
+            return@LaunchedEffect
         }
+
+        viewModel.initializeRecipe(mode, recipeDetails)
     }
 
     LaunchedEffect(Unit) {
@@ -162,10 +115,10 @@ fun AddEditRecipeView(
             }
         }
     }
-
+//TODO Przy rekompozycji (obracanie ekranu) dane się czyszczą, a jeśli tego nie ma, to zostają nawet przy próbie dodania nowego/edycji innego
     DisposableEffect(Unit) {
         onDispose {
-            viewModel.isRecipeLoading = true
+            viewModel.clearRecipeForm()
         }
     }
 
@@ -181,7 +134,7 @@ fun AddEditRecipeView(
     if (showIngredientEditDialog.value) {
         val ingredient = when (ingredientDialogMode.value) {
             EditMode.ADD -> IngredientInput()
-            EditMode.EDIT -> ingredients[ingredientToEditIndex.value]
+            EditMode.EDIT -> viewModel.ingredients[ingredientToEditIndex.value]
         }
 
         IngredientDialog(
@@ -189,9 +142,9 @@ fun AddEditRecipeView(
             onDismiss = { showIngredientEditDialog.value = false },
             onConfirm = { updated ->
                 if (ingredientDialogMode.value == EditMode.ADD) {
-                    ingredients.add(updated)
+                    viewModel.ingredients.add(updated)
                 } else {
-                    ingredients[ingredientToEditIndex.value] = updated
+                    viewModel.ingredients[ingredientToEditIndex.value] = updated
                 }
                 showIngredientEditDialog.value = false
             }
@@ -201,7 +154,7 @@ fun AddEditRecipeView(
     if (showStepEditDialog.value) {
         val step = when (stepDialogMode.value) {
             EditMode.ADD -> ""
-            EditMode.EDIT -> steps[stepToEditIndex.value]
+            EditMode.EDIT -> viewModel.steps[stepToEditIndex.value]
         }
 
         StepDialog(
@@ -209,9 +162,9 @@ fun AddEditRecipeView(
             onDismiss = { showStepEditDialog.value = false },
             onConfirm = { updated ->
                 if (stepDialogMode.value == EditMode.ADD) {
-                    steps.add(updated)
+                    viewModel.steps.add(updated)
                 } else {
-                    steps[stepToEditIndex.value] = updated
+                    viewModel.steps[stepToEditIndex.value] = updated
                 }
                 showStepEditDialog.value = false
             }
@@ -339,7 +292,7 @@ fun AddEditRecipeView(
                                 fontWeight = FontWeight.Bold
                             )
 //Tabela z dodanymi składnikami
-                            ingredients.forEachIndexed { index, ingredient ->
+                            viewModel.ingredients.forEachIndexed { index, ingredient ->
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically,
@@ -381,7 +334,7 @@ fun AddEditRecipeView(
                                     }
                                     //Usuwanie składnika
                                     IconButton(onClick = {
-                                        ingredients.removeAt(index)
+                                        viewModel.ingredients.removeAt(index)
                                     }) {
                                         Icon(
                                             painter = painterResource(R.drawable.baseline_clear_24),
@@ -428,7 +381,7 @@ fun AddEditRecipeView(
                                     fontWeight = FontWeight.Bold
                                 )
 //Lista kroków
-                                steps.forEachIndexed { index, value ->
+                                viewModel.steps.forEachIndexed { index, value ->
                                     if (index != 0) {
                                         HorizontalDivider(thickness = 2.dp)
                                     }
@@ -466,7 +419,7 @@ fun AddEditRecipeView(
                                             }
 
                                             IconButton(onClick = {
-                                                steps.removeAt(index)
+                                                viewModel.steps.removeAt(index)
                                             }) {
                                                 Icon(
                                                     painter = painterResource(R.drawable.baseline_clear_24),
@@ -509,8 +462,8 @@ fun AddEditRecipeView(
                             viewModel.isRecipeLoading = true
                             viewModel.saveRecipe(
                                 mode = mode,
-                                ingredients = ingredients.toList(),
-                                steps = steps.toList()
+                                ingredients = viewModel.ingredients.toList(),
+                                steps = viewModel.steps.toList()
                             )
                         }
                     ) {

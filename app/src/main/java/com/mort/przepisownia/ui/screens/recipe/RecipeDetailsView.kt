@@ -46,10 +46,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mort.przepisownia.R
-import com.mort.przepisownia.data.entities.Recipe
-import com.mort.przepisownia.data.entities.RecipeWithDetails
 import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.ui.common.AppBarView
+import com.mort.przepisownia.ui.common.LoadingOverlay
 import com.mort.przepisownia.ui.common.MenuDropdownItem
 import com.mort.przepisownia.ui.screens.recipe.components.DeleteRecipeDialog
 import com.mort.przepisownia.utils.displayName
@@ -65,26 +64,22 @@ fun RecipeDetailsView(
     viewModel: RecipeViewModel,
 ) {
     val context = LocalContext.current
-    val recipe = viewModel.getRecipeDetails(id).collectAsState(
-        initial = RecipeWithDetails(
-            recipe = Recipe(0L, "", "", false, "", ""),
-            ingredients = listOf(),
-            steps = listOf()
-        )
-    )
-    viewModel.recipeFavState = recipe.value.recipe.isFavourite
+    val recipe = viewModel.getRecipeDetails(id).collectAsState(initial = null).value
+    if (recipe == null) {
+        LoadingOverlay(true) { }
+        return
+    }
 
-    val recipeId = recipe.value.recipe.id
-
+    val isFavourite = recipe.recipe.isFavourite
     val ingredientsCheckState = remember { mutableStateMapOf<Long, Boolean>() }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val snackMessage = remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(recipe.value.ingredients) {
+    LaunchedEffect(recipe.ingredients) {
         ingredientsCheckState.clear()
-        recipe.value.ingredients.forEach {
+        recipe.ingredients.forEach {
             ingredientsCheckState[it.id] = false
         }
     }
@@ -93,10 +88,10 @@ fun RecipeDetailsView(
 
     if (showDeleteRecipeDialog.value) {
         DeleteRecipeDialog(
-            recipe = recipe.value.recipe,
+            recipe = recipe.recipe,
             onDismiss = { showDeleteRecipeDialog.value = false },
             onConfirm = {
-                viewModel.setPendingDeletedRecipe(recipe.value.recipe)
+                viewModel.setPendingDeletedRecipe(recipe.recipe)
                 showDeleteRecipeDialog.value = false
                 navController.navigate(Screen.RecipesScreen.route)
             }
@@ -106,12 +101,12 @@ fun RecipeDetailsView(
     Scaffold(
         topBar = {
             AppBarView(
-                title = recipe.value.recipe.name,
+                title = recipe.recipe.name,
                 onBackNavClick = { navController.navigateUp() },
                 dropdownMenuItems = listOf(
                     MenuDropdownItem(
                         text = stringResource(R.string.edit),
-                        action = { navController.navigate(Screen.AddEditScreen.route + "/$recipeId") }
+                        action = { navController.navigate(Screen.AddEditScreen.route + "/$id") }
                     ),
                     MenuDropdownItem(
                         text = stringResource(R.string.delete),
@@ -137,7 +132,7 @@ fun RecipeDetailsView(
                 Box(
                     contentAlignment = Alignment.Center
                 ) {
-                    val imageFile = recipe.value.recipe.imagePath.takeIf { it.isNotBlank() }?.let {
+                    val imageFile = recipe.recipe.imagePath.takeIf { it.isNotBlank() }?.let {
                         File(context.filesDir, it)
                     }
 
@@ -170,7 +165,7 @@ fun RecipeDetailsView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
-                    text = recipe.value.recipe.name,
+                    text = recipe.recipe.name,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 18.sp,
                     textAlign = TextAlign.Center
@@ -184,7 +179,7 @@ fun RecipeDetailsView(
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    if (recipe.value.recipe.link.isNotEmpty()) {
+                    if (recipe.recipe.link.isNotEmpty()) {
                         Button(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -193,7 +188,7 @@ fun RecipeDetailsView(
                             onClick = {
                                 val urlIntent = Intent(
                                     Intent.ACTION_VIEW,
-                                    Uri.parse(recipe.value.recipe.link)
+                                    Uri.parse(recipe.recipe.link)
                                 )
                                 context.startActivity(urlIntent)
                             }
@@ -211,8 +206,8 @@ fun RecipeDetailsView(
                             .weight(0.5F),
                         shape = RoundedCornerShape(50),
                         onClick = {
-                            viewModel.updateRecipeFav(recipe.value.recipe.id)
-                            if (!viewModel.recipeFavState) {
+                            viewModel.updateRecipeFav(recipe.recipe.id)
+                            if (!isFavourite) {
                                 snackMessage.value = context.resources.getString(R.string.recipe_added_favourite)
                             } else {
                                 snackMessage.value = context.resources.getString(R.string.recipe_removed_favourite)
@@ -224,7 +219,7 @@ fun RecipeDetailsView(
                     ) {
                         Text(stringResource(R.string.favourite))
                         Icon(
-                            painter = if (viewModel.recipeFavState) painterResource(R.drawable.baseline_favorite_24) else painterResource(
+                            painter = if (isFavourite) painterResource(R.drawable.baseline_favorite_24) else painterResource(
                                 R.drawable.baseline_favorite_border_24
                             ),
                             contentDescription = stringResource(R.string.favourite)
@@ -239,7 +234,7 @@ fun RecipeDetailsView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
-                    text = recipe.value.recipe.desc,
+                    text = recipe.recipe.desc,
                     fontSize = 14.sp,
                     textAlign = TextAlign.Start
                 )
@@ -250,7 +245,7 @@ fun RecipeDetailsView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
-                    text = stringResource(R.string.date_added, formatDate(recipe.value.recipe.createdAt)),
+                    text = stringResource(R.string.date_added, formatDate(recipe.recipe.createdAt)),
                     fontSize = 14.sp,
                     textAlign = TextAlign.End
                 )
@@ -274,7 +269,7 @@ fun RecipeDetailsView(
                         verticalArrangement = Arrangement.Top,
                         horizontalAlignment = Alignment.Start
                     ) {
-                        recipe.value.ingredients.forEachIndexed { _, ingredient ->
+                        recipe.ingredients.forEachIndexed { _, ingredient ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -322,7 +317,7 @@ fun RecipeDetailsView(
                         fontWeight = FontWeight.Bold
                     )
 
-                    recipe.value.steps.forEachIndexed { index, step ->
+                    recipe.steps.forEachIndexed { index, step ->
                         Column(
                             modifier = Modifier.fillMaxWidth(),
                         ) {

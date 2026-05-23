@@ -46,7 +46,7 @@ class RecipeRepository(
 
     fun getRecipeByID(id: Long): Flow<Recipe> = recipeDao.getRecipeByID(id)
 
-    fun getRecipeDetails(recipeId: Long): Flow<RecipeWithDetails> =
+    fun getRecipeDetails(recipeId: Long): Flow<RecipeWithDetails?> =
         recipeDao.getRecipeDetails(recipeId)
 
     suspend fun updateRecipe(
