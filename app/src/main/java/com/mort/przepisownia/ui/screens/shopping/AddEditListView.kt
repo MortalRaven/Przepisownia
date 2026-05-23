@@ -51,7 +51,6 @@ import com.mort.przepisownia.ui.common.AppBarView
 import com.mort.przepisownia.ui.common.EditMode
 import com.mort.przepisownia.utils.displayName
 import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialog
-import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialogMode
 import com.mort.przepisownia.ui.screens.recipe.components.RecipeTextField
 import com.mort.przepisownia.utils.inTextFormatter
 
@@ -125,20 +124,20 @@ fun AddEditListScreen(
     }
 
     val showIngredientEditDialog = remember { mutableStateOf(false) }
-    val ingredientDialogMode = remember { mutableStateOf(IngredientDialogMode.ADD) }
+    val ingredientDialogMode = remember { mutableStateOf(EditMode.ADD) }
     val ingredientToEditIndex = remember { mutableStateOf(-1) }
 
     if (showIngredientEditDialog.value) {
         val ingredient = when (ingredientDialogMode.value) {
-            IngredientDialogMode.ADD -> IngredientInput()
-            IngredientDialogMode.EDIT -> ingredients[ingredientToEditIndex.value]
+            EditMode.ADD -> IngredientInput()
+            EditMode.EDIT -> ingredients[ingredientToEditIndex.value]
         }
 
         IngredientDialog(
             ingredient = ingredient,
             onDismiss = { showIngredientEditDialog.value = false },
             onConfirm = { updated ->
-                if (ingredientDialogMode.value == IngredientDialogMode.ADD) {
+                if (ingredientDialogMode.value == EditMode.ADD) {
                     ingredients.add(updated)
                 } else {
                     ingredients[ingredientToEditIndex.value] = updated
@@ -170,7 +169,7 @@ fun AddEditListScreen(
                 shape = CircleShape,
                 onClick = {
                     focusManager.clearFocus()
-                    ingredientDialogMode.value = IngredientDialogMode.ADD
+                    ingredientDialogMode.value = EditMode.ADD
                     showIngredientEditDialog.value = !showIngredientEditDialog.value
                 }
             ) {
@@ -232,7 +231,7 @@ fun AddEditListScreen(
                         ) {
                             Row(
                                 modifier = Modifier.weight(1f).clickable {
-                                    ingredientDialogMode.value = IngredientDialogMode.EDIT
+                                    ingredientDialogMode.value = EditMode.EDIT
                                     ingredientToEditIndex.value = index
                                     showIngredientEditDialog.value =
                                         !showIngredientEditDialog.value

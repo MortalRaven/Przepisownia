@@ -60,10 +60,8 @@ import com.mort.przepisownia.ui.common.EditMode
 import com.mort.przepisownia.ui.common.LoadingOverlay
 import com.mort.przepisownia.utils.displayName
 import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialog
-import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialogMode
 import com.mort.przepisownia.ui.screens.recipe.components.RecipeTextField
 import com.mort.przepisownia.ui.screens.recipe.components.StepDialog
-import com.mort.przepisownia.ui.screens.recipe.components.StepDialogMode
 import com.mort.przepisownia.utils.inTextFormatter
 import com.mort.przepisownia.utils.saveImageToInternalStorage
 import java.io.File
@@ -73,7 +71,7 @@ fun AddEditRecipeView(
     id: Long,
     mode: EditMode,
     navController: NavController,
-    viewModel: RecipeViewModel
+    viewModel: RecipeViewModel,
 ) {
     val context = LocalContext.current
     //Obsługa zdjęć
@@ -173,24 +171,24 @@ fun AddEditRecipeView(
 
     //Okna edycji składnika i kroku
     val showIngredientEditDialog = remember { mutableStateOf(false) }
-    val ingredientDialogMode = remember { mutableStateOf(IngredientDialogMode.ADD) }
+    val ingredientDialogMode = remember { mutableStateOf(EditMode.ADD) }
     val ingredientToEditIndex = remember { mutableStateOf(-1) }
 
     val showStepEditDialog = remember { mutableStateOf(false) }
-    val stepDialogMode = remember { mutableStateOf(StepDialogMode.ADD) }
+    val stepDialogMode = remember { mutableStateOf(EditMode.ADD) }
     val stepToEditIndex = remember { mutableStateOf(-1) }
 
     if (showIngredientEditDialog.value) {
         val ingredient = when (ingredientDialogMode.value) {
-            IngredientDialogMode.ADD -> IngredientInput()
-            IngredientDialogMode.EDIT -> ingredients[ingredientToEditIndex.value]
+            EditMode.ADD -> IngredientInput()
+            EditMode.EDIT -> ingredients[ingredientToEditIndex.value]
         }
 
         IngredientDialog(
             ingredient = ingredient,
             onDismiss = { showIngredientEditDialog.value = false },
             onConfirm = { updated ->
-                if (ingredientDialogMode.value == IngredientDialogMode.ADD) {
+                if (ingredientDialogMode.value == EditMode.ADD) {
                     ingredients.add(updated)
                 } else {
                     ingredients[ingredientToEditIndex.value] = updated
@@ -202,15 +200,15 @@ fun AddEditRecipeView(
 
     if (showStepEditDialog.value) {
         val step = when (stepDialogMode.value) {
-            StepDialogMode.ADD -> ""
-            StepDialogMode.EDIT -> steps[stepToEditIndex.value]
+            EditMode.ADD -> ""
+            EditMode.EDIT -> steps[stepToEditIndex.value]
         }
 
         StepDialog(
             step = step,
             onDismiss = { showStepEditDialog.value = false },
             onConfirm = { updated ->
-                if (stepDialogMode.value == StepDialogMode.ADD) {
+                if (stepDialogMode.value == EditMode.ADD) {
                     steps.add(updated)
                 } else {
                     steps[stepToEditIndex.value] = updated
@@ -329,87 +327,84 @@ fun AddEditRecipeView(
                 item {
                     Card {
                         Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.Top,
+                            horizontalAlignment = Alignment.Start
                         ) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.Top,
-                                horizontalAlignment = Alignment.Start
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.ingredients_list),
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+                            Text(
+                                text = stringResource(R.string.ingredients_list),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
 //Tabela z dodanymi składnikami
-                                ingredients.forEachIndexed { index, ingredient ->
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        //Ilość składnika
-                                        Text(
-                                            modifier = Modifier.weight(0.5f),
-                                            text = if (ingredient.quantity != null && ingredient.unit != null) {
-                                                "${ingredient.quantity.inTextFormatter()} ${
-                                                    ingredient.unit?.displayName(
-                                                        ingredient.quantity!!
-                                                    )
-                                                }"
-                                            } else {
-                                                ""
-                                            },
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Bold
+                            ingredients.forEachIndexed { index, ingredient ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    //Ilość składnika
+                                    Text(
+                                        modifier = Modifier.weight(0.5f),
+                                        text = if (ingredient.quantity != null && ingredient.unit != null) {
+                                            "${ingredient.quantity.inTextFormatter()} ${
+                                                ingredient.unit?.displayName(
+                                                    ingredient.quantity!!
+                                                )
+                                            }"
+                                        } else {
+                                            ""
+                                        },
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    //Składnik
+                                    Text(
+                                        modifier = Modifier.weight(1f),
+                                        text = ingredient.name,
+                                        fontSize = 16.sp
+                                    )
+                                    //Edycja składnika
+                                    IconButton(onClick = {
+                                        ingredientDialogMode.value = EditMode.EDIT
+                                        ingredientToEditIndex.value = index
+                                        showIngredientEditDialog.value =
+                                            !showIngredientEditDialog.value
+                                    }) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.baseline_edit_24),
+                                            contentDescription = stringResource(R.string.edit_ingredient),
+                                            tint = Color.Gray
                                         )
-                                        //Składnik
-                                        Text(
-                                            modifier = Modifier.weight(1f),
-                                            text = ingredient.name,
-                                            fontSize = 16.sp
+                                    }
+                                    //Usuwanie składnika
+                                    IconButton(onClick = {
+                                        ingredients.removeAt(index)
+                                    }) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.baseline_clear_24),
+                                            contentDescription = stringResource(R.string.remove_ingredient),
+                                            tint = Color.Red
                                         )
-                                        //Edycja składnika
-                                        IconButton(onClick = {
-                                            ingredientDialogMode.value = IngredientDialogMode.EDIT
-                                            ingredientToEditIndex.value = index
-                                            showIngredientEditDialog.value =
-                                                !showIngredientEditDialog.value
-                                        }) {
-                                            Icon(
-                                                painter = painterResource(R.drawable.baseline_edit_24),
-                                                contentDescription = stringResource(R.string.edit_ingredient),
-                                                tint = Color.Gray
-                                            )
-                                        }
-                                        //Usuwanie składnika
-                                        IconButton(onClick = {
-                                            ingredients.removeAt(index)
-                                        }) {
-                                            Icon(
-                                                painter = painterResource(R.drawable.baseline_clear_24),
-                                                contentDescription = stringResource(R.string.remove_ingredient),
-                                                tint = Color.Red
-                                            )
-                                        }
                                     }
                                 }
+                            }
 
-                                Spacer(modifier = Modifier.height(10.dp))
-                                //Przycisk dodawania składnika
-                                Row {
-                                    Button(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        shape = RoundedCornerShape(50),
-                                        onClick = {
-                                            focusManager.clearFocus()
-                                            ingredientDialogMode.value = IngredientDialogMode.ADD
-                                            showIngredientEditDialog.value = !showIngredientEditDialog.value
-                                        }
-                                    ) {
-                                        Text("+ " + stringResource(R.string.new_ingredient))
+                            Spacer(modifier = Modifier.height(10.dp))
+                            //Przycisk dodawania składnika
+                            Row {
+                                Button(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(50),
+                                    onClick = {
+                                        focusManager.clearFocus()
+                                        ingredientDialogMode.value = EditMode.ADD
+                                        showIngredientEditDialog.value = !showIngredientEditDialog.value
                                     }
+                                ) {
+                                    Text("+ " + stringResource(R.string.new_ingredient))
                                 }
                             }
                         }
@@ -459,7 +454,7 @@ fun AddEditRecipeView(
                                             )
 
                                             IconButton(onClick = {
-                                                stepDialogMode.value = StepDialogMode.EDIT
+                                                stepDialogMode.value = EditMode.EDIT
                                                 stepToEditIndex.value = index
                                                 showStepEditDialog.value = !showStepEditDialog.value
                                             }) {
@@ -491,7 +486,7 @@ fun AddEditRecipeView(
                                         shape = RoundedCornerShape(50),
                                         onClick = {
                                             focusManager.clearFocus()
-                                            stepDialogMode.value = StepDialogMode.ADD
+                                            stepDialogMode.value = EditMode.ADD
                                             showStepEditDialog.value = !showStepEditDialog.value
                                         }) {
                                         Text("+ " + stringResource(R.string.new_step))

@@ -55,7 +55,3 @@ fun StepDialog(
         }
     )
 }
-
-enum class StepDialogMode {
-    ADD, EDIT
-}

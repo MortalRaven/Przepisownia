@@ -150,7 +150,3 @@ fun IngredientDialog(
         }
     )
 }
-
-enum class IngredientDialogMode {
-    ADD, EDIT
-}
