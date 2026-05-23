@@ -149,12 +149,16 @@ fun AddEditRecipeView(
     }
 
     LaunchedEffect(Unit) {
-        viewModel.events.collect {event ->
+        viewModel.events.collect { event ->
             when (event) {
                 is RecipeEvent.ShowSnackbar -> {
-                    snackbarHostState.showSnackbar(message = context.getString(event.message), duration = SnackbarDuration.Short)
+                    snackbarHostState.showSnackbar(
+                        message = context.getString(event.message),
+                        duration = SnackbarDuration.Short
+                    )
                 }
-                RecipeEvent.NavigateBack -> {
+
+                is RecipeEvent.NavigateBack -> {
                     navController.navigate(Screen.RecipesScreen.route)
                 }
             }
@@ -218,7 +222,8 @@ fun AddEditRecipeView(
 
     Scaffold(
         //Chowanie klawiatury - usunięcie focusu przy kliknięciu na ekranie
-        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
+        modifier = Modifier
+            .pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppBarView(
@@ -234,7 +239,7 @@ fun AddEditRecipeView(
                     .padding(10.dp)
                     .imePadding(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
 //Dodawanie zdjęcia
                 item {
@@ -348,8 +353,14 @@ fun AddEditRecipeView(
                                         Text(
                                             modifier = Modifier.weight(0.5f),
                                             text = if (ingredient.quantity != null && ingredient.unit != null) {
-                                                "${ingredient.quantity.inTextFormatter()} ${ingredient.unit?.displayName(ingredient.quantity!!)}"
-                                            } else {""},
+                                                "${ingredient.quantity.inTextFormatter()} ${
+                                                    ingredient.unit?.displayName(
+                                                        ingredient.quantity!!
+                                                    )
+                                                }"
+                                            } else {
+                                                ""
+                                            },
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Bold
                                         )
@@ -386,15 +397,15 @@ fun AddEditRecipeView(
                                 }
 
                                 Spacer(modifier = Modifier.height(10.dp))
-
+                                //Przycisk dodawania składnika
                                 Row {
                                     Button(
                                         modifier = Modifier.fillMaxWidth(),
                                         shape = RoundedCornerShape(50),
                                         onClick = {
+                                            focusManager.clearFocus()
                                             ingredientDialogMode.value = IngredientDialogMode.ADD
-                                            showIngredientEditDialog.value =
-                                                !showIngredientEditDialog.value
+                                            showIngredientEditDialog.value = !showIngredientEditDialog.value
                                         }
                                     ) {
                                         Text("+ " + stringResource(R.string.new_ingredient))
@@ -473,12 +484,13 @@ fun AddEditRecipeView(
                                 }
 
                                 Spacer(modifier = Modifier.height(10.dp))
-
+                                //Przycisk dodawania kroku
                                 Row {
                                     Button(
                                         modifier = Modifier.fillMaxWidth(),
                                         shape = RoundedCornerShape(50),
                                         onClick = {
+                                            focusManager.clearFocus()
                                             stepDialogMode.value = StepDialogMode.ADD
                                             showStepEditDialog.value = !showStepEditDialog.value
                                         }) {
@@ -493,9 +505,13 @@ fun AddEditRecipeView(
 // Zapisywanie przepisu
                 item {
                     Button(
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
                         shape = RectangleShape,
                         onClick = {
+                            focusManager.clearFocus()
+                            viewModel.isRecipeLoading = true
                             viewModel.saveRecipe(
                                 mode = mode,
                                 ingredients = ingredients.toList(),
