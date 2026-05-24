@@ -1,7 +1,6 @@
 package com.mort.przepisownia.ui.screens.recipe
 
 import android.content.Context
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -145,14 +144,12 @@ class RecipeViewModel(
         return recipeRepository.getRecipeDetails(recipeId)
     }
 
-    fun loadRecipeToRead(recipeId: Long) {
-        getRecipeDetails(recipeId)
-    }
-
     fun initializeRecipe(
+        id: Long,
         mode: EditMode,
         recipeDetails: RecipeWithDetails?
     ) {
+        if (id != recipeId) initialized = false
         if (initialized) return
 
         when (mode) {
@@ -197,7 +194,7 @@ class RecipeViewModel(
         initialized = true
     }
 
-    fun clearRecipeForm() {
+    private fun clearRecipeForm() {
         recipeId = 0L
         recipeNameState = ""
         recipeDescState = ""
@@ -255,6 +252,7 @@ class RecipeViewModel(
                 _events.emit(RecipeEvent.ShowSnackbar(R.string.recipe_added))
                 _events.emit(RecipeEvent.NavigateBack)
             }
+            clearRecipeForm()
         }
     }
 

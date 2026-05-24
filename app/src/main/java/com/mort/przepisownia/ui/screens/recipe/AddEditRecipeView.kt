@@ -28,7 +28,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -95,8 +94,7 @@ fun AddEditRecipeView(
         if (mode == EditMode.EDIT && recipeDetails == null) {
             return@LaunchedEffect
         }
-
-        viewModel.initializeRecipe(mode, recipeDetails)
+        viewModel.initializeRecipe(id, mode, recipeDetails)
     }
 
     LaunchedEffect(Unit) {
@@ -113,12 +111,6 @@ fun AddEditRecipeView(
                     navController.navigate(Screen.RecipesScreen.route)
                 }
             }
-        }
-    }
-//TODO Przy rekompozycji (obracanie ekranu) dane się czyszczą, a jeśli tego nie ma, to zostają nawet przy próbie dodania nowego/edycji innego
-    DisposableEffect(Unit) {
-        onDispose {
-            viewModel.clearRecipeForm()
         }
     }
 

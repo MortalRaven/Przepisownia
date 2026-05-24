@@ -106,7 +106,9 @@ fun RecipeDetailsView(
                 dropdownMenuItems = listOf(
                     MenuDropdownItem(
                         text = stringResource(R.string.edit),
-                        action = { navController.navigate(Screen.AddEditScreen.route + "/$id") }
+                        action = {
+                            navController.navigate(Screen.AddEditScreen.route + "/$id")
+                        }
                     ),
                     MenuDropdownItem(
                         text = stringResource(R.string.delete),
@@ -290,7 +292,7 @@ fun RecipeDetailsView(
                                     text = ingredient.name,
                                     fontSize = 14.sp
                                 )
-                                //Ilość skłandika
+                                //Ilość składnika
                                 Text(
                                     text = if (ingredient.quantity != null && ingredient.unit != null) {
                                         "${ingredient.quantity.inTextFormatter()} ${ingredient.unit.displayName(ingredient.quantity)}"
