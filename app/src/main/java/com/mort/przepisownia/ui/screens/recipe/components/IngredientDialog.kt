@@ -28,8 +28,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.mort.przepisownia.R
 import com.mort.przepisownia.data.entities.IngredientInput
+import com.mort.przepisownia.ui.common.EditMode
 import com.mort.przepisownia.utils.UnitType
 import com.mort.przepisownia.utils.displayName
+
+data class IngredientDialogUiState(
+    val isVisible: Boolean = false,
+    val mode: EditMode = EditMode.ADD,
+    val editIndex: Int = -1
+)
 
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)

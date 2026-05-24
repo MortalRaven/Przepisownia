@@ -27,6 +27,6 @@ fun RecipeTextField(
                 Text(text = supportingText)
             }
         },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
     )
 }

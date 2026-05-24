@@ -30,7 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,6 +69,9 @@ fun AddEditRecipeView(
     viewModel: RecipeViewModel,
 ) {
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val focusManager = LocalFocusManager.current
+
     //Obsługa zdjęć
     val photoPickerLauncher =
         rememberLauncherForActivityResult(
@@ -82,14 +84,10 @@ fun AddEditRecipeView(
                 }
             }
         }
-    //Snackbar
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    //Obsługa focusu
-    val focusManager = LocalFocusManager.current
 
     val recipeDetails = viewModel.getRecipeDetails(id).collectAsState(initial = null).value
 
+    //Wczytywanie przepisu
     LaunchedEffect(mode, recipeDetails) {
         if (mode == EditMode.EDIT && recipeDetails == null) {
             return@LaunchedEffect
@@ -97,6 +95,7 @@ fun AddEditRecipeView(
         viewModel.initializeRecipe(id, mode, recipeDetails)
     }
 
+    //Eventy
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -114,59 +113,43 @@ fun AddEditRecipeView(
         }
     }
 
-    //Okna edycji składnika i kroku
-    val showIngredientEditDialog = remember { mutableStateOf(false) }
-    val ingredientDialogMode = remember { mutableStateOf(EditMode.ADD) }
-    val ingredientToEditIndex = remember { mutableStateOf(-1) }
-
-    val showStepEditDialog = remember { mutableStateOf(false) }
-    val stepDialogMode = remember { mutableStateOf(EditMode.ADD) }
-    val stepToEditIndex = remember { mutableStateOf(-1) }
-
-    if (showIngredientEditDialog.value) {
-        val ingredient = when (ingredientDialogMode.value) {
+    //Okno wprowadzania/edycji składnika
+    if (viewModel.ingredientDialogState.isVisible) {
+        val ingredient = when (viewModel.ingredientDialogState.mode) {
             EditMode.ADD -> IngredientInput()
-            EditMode.EDIT -> viewModel.ingredients[ingredientToEditIndex.value]
+            EditMode.EDIT -> viewModel.ingredients[viewModel.ingredientDialogState.editIndex]
         }
 
         IngredientDialog(
             ingredient = ingredient,
-            onDismiss = { showIngredientEditDialog.value = false },
+            onDismiss = {
+                viewModel.closeIngredientDialog()
+            },
             onConfirm = { updated ->
-                if (ingredientDialogMode.value == EditMode.ADD) {
-                    viewModel.ingredients.add(updated)
-                } else {
-                    viewModel.ingredients[ingredientToEditIndex.value] = updated
-                }
-                showIngredientEditDialog.value = false
+                viewModel.saveIngredient(updated)
             }
         )
     }
 
-    if (showStepEditDialog.value) {
-        val step = when (stepDialogMode.value) {
+    //Okno wprowadzania/edycji kroku
+    if (viewModel.stepDialogState.isVisible) {
+        val step = when (viewModel.stepDialogState.mode) {
             EditMode.ADD -> ""
-            EditMode.EDIT -> viewModel.steps[stepToEditIndex.value]
+            EditMode.EDIT -> viewModel.steps[viewModel.stepDialogState.editIndex]
         }
 
         StepDialog(
             step = step,
-            onDismiss = { showStepEditDialog.value = false },
+            onDismiss = { viewModel.closeStepDialog() },
             onConfirm = { updated ->
-                if (stepDialogMode.value == EditMode.ADD) {
-                    viewModel.steps.add(updated)
-                } else {
-                    viewModel.steps[stepToEditIndex.value] = updated
-                }
-                showStepEditDialog.value = false
+                viewModel.saveStep(updated)
             }
         )
     }
 
     Scaffold(
         //Chowanie klawiatury - usunięcie focusu przy kliknięciu na ekranie
-        modifier = Modifier
-            .pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
+        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppBarView(
@@ -313,10 +296,8 @@ fun AddEditRecipeView(
                                     )
                                     //Edycja składnika
                                     IconButton(onClick = {
-                                        ingredientDialogMode.value = EditMode.EDIT
-                                        ingredientToEditIndex.value = index
-                                        showIngredientEditDialog.value =
-                                            !showIngredientEditDialog.value
+                                        viewModel.openIngredientDialog(index)
+
                                     }) {
                                         Icon(
                                             painter = painterResource(R.drawable.baseline_edit_24),
@@ -345,8 +326,7 @@ fun AddEditRecipeView(
                                     shape = RoundedCornerShape(50),
                                     onClick = {
                                         focusManager.clearFocus()
-                                        ingredientDialogMode.value = EditMode.ADD
-                                        showIngredientEditDialog.value = !showIngredientEditDialog.value
+                                        viewModel.openIngredientDialog()
                                     }
                                 ) {
                                     Text("+ " + stringResource(R.string.new_ingredient))
@@ -399,9 +379,7 @@ fun AddEditRecipeView(
                                             )
 
                                             IconButton(onClick = {
-                                                stepDialogMode.value = EditMode.EDIT
-                                                stepToEditIndex.value = index
-                                                showStepEditDialog.value = !showStepEditDialog.value
+                                                viewModel.openStepDialog(index)
                                             }) {
                                                 Icon(
                                                     painter = painterResource(R.drawable.baseline_edit_24),
@@ -431,8 +409,7 @@ fun AddEditRecipeView(
                                         shape = RoundedCornerShape(50),
                                         onClick = {
                                             focusManager.clearFocus()
-                                            stepDialogMode.value = EditMode.ADD
-                                            showStepEditDialog.value = !showStepEditDialog.value
+                                            viewModel.openStepDialog()
                                         }) {
                                         Text("+ " + stringResource(R.string.new_step))
                                     }

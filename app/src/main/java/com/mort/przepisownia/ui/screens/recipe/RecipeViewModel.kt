@@ -19,7 +19,9 @@ import com.mort.przepisownia.data.preferences.PreferencesManager
 import com.mort.przepisownia.data.repository.RecipeRepository
 import com.mort.przepisownia.ui.common.EditMode
 import com.mort.przepisownia.ui.common.ViewType
+import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialogUiState
 import com.mort.przepisownia.ui.screens.recipe.components.SortType
+import com.mort.przepisownia.ui.screens.recipe.components.StepDialogUiState
 import com.mort.przepisownia.utils.isValidUrl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -65,6 +67,9 @@ class RecipeViewModel(
             false
         }
     }
+
+    var ingredientDialogState by mutableStateOf(IngredientDialogUiState())
+    var stepDialogState by mutableStateOf(StepDialogUiState())
 
     private val _events = MutableSharedFlow<RecipeEvent>()
     val events = _events.asSharedFlow()
@@ -147,7 +152,7 @@ class RecipeViewModel(
     fun initializeRecipe(
         id: Long,
         mode: EditMode,
-        recipeDetails: RecipeWithDetails?
+        recipeDetails: RecipeWithDetails?,
     ) {
         if (id != recipeId) initialized = false
         if (initialized) return
@@ -336,6 +341,69 @@ class RecipeViewModel(
 
     fun clearPendingDeleteList() {
         _pendingDeleteRecipe.value = null
+    }
+
+    fun saveIngredient(ingredient: IngredientInput) {
+        when (ingredientDialogState.mode) {
+            EditMode.ADD -> {
+                ingredients.add(ingredient)
+            }
+
+            EditMode.EDIT -> {
+                ingredients[ingredientDialogState.editIndex] = ingredient
+            }
+        }
+        closeIngredientDialog()
+    }
+
+    fun openIngredientDialog(index: Int = -1) {
+        ingredientDialogState = if (index != -1) {
+            IngredientDialogUiState(
+                isVisible = true,
+                mode = EditMode.EDIT,
+                editIndex = index
+            )
+        } else {
+            IngredientDialogUiState(
+                isVisible = true,
+                mode = EditMode.ADD
+            )
+        }
+    }
+
+    fun closeIngredientDialog() {
+        ingredientDialogState = ingredientDialogState.copy(isVisible = false)
+    }
+
+    fun saveStep(step: String) {
+        when (stepDialogState.mode) {
+            EditMode.ADD -> {
+                steps.add(step)
+            }
+            EditMode.EDIT -> {
+                steps[stepDialogState.editIndex] = step
+            }
+        }
+        closeStepDialog()
+    }
+
+    fun openStepDialog(index: Int = -1) {
+        stepDialogState = if (index != -1) {
+            StepDialogUiState(
+                isVisible = true,
+                mode = EditMode.EDIT,
+                editIndex = index
+            )
+        } else {
+            StepDialogUiState(
+                isVisible = true,
+                mode = EditMode.ADD
+            )
+        }
+    }
+
+    fun closeStepDialog() {
+        stepDialogState = stepDialogState.copy(isVisible = false)
     }
 }
 
