@@ -329,7 +329,7 @@ fun AddEditRecipeView(
                                         viewModel.openIngredientDialog()
                                     }
                                 ) {
-                                    Text("+ " + stringResource(R.string.new_ingredient))
+                                    Text(stringResource(R.string.new_ingredient))
                                 }
                             }
                         }
@@ -411,7 +411,7 @@ fun AddEditRecipeView(
                                             focusManager.clearFocus()
                                             viewModel.openStepDialog()
                                         }) {
-                                        Text("+ " + stringResource(R.string.new_step))
+                                        Text(stringResource(R.string.new_step))
                                     }
                                 }
                             }
@@ -429,11 +429,7 @@ fun AddEditRecipeView(
                         onClick = {
                             focusManager.clearFocus()
                             viewModel.isRecipeLoading = true
-                            viewModel.saveRecipe(
-                                mode = mode,
-                                ingredients = viewModel.ingredients.toList(),
-                                steps = viewModel.steps.toList()
-                            )
+                            viewModel.saveRecipe(mode = mode)
                         }
                     ) {
                         Text(

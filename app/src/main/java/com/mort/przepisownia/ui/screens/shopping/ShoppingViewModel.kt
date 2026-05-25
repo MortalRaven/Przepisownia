@@ -2,6 +2,7 @@ package com.mort.przepisownia.ui.screens.shopping
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -13,6 +14,7 @@ import com.mort.przepisownia.data.entities.ListWithItems
 import com.mort.przepisownia.data.entities.ShoppingList
 import com.mort.przepisownia.data.repository.ShoppingRepository
 import com.mort.przepisownia.ui.common.EditMode
+import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialogUiState
 import com.mort.przepisownia.ui.screens.recipe.components.SortType
 import com.mort.przepisownia.utils.formatDate
 import kotlinx.coroutines.Dispatchers
@@ -33,12 +35,17 @@ class ShoppingViewModel(
     private val _events = MutableSharedFlow<ShoppingListEvent>()
     val events = _events.asSharedFlow()
 
-    var listId by mutableLongStateOf(0L)
+    private var initialized = false
+
+    private var listId by mutableLongStateOf(0L)
     var listNameState by mutableStateOf("")
-    var listCreatedState by mutableLongStateOf(0L)
+    private var listCreatedState by mutableLongStateOf(0L)
+    val ingredients = mutableStateListOf<IngredientInput>()
 
     var isDbLoading by mutableStateOf(true)
-    var isListLoading by mutableStateOf(true)
+    private var isListLoading by mutableStateOf(true)
+
+    var ingredientDialogState by mutableStateOf(IngredientDialogUiState())
 
     private val _sortType = MutableStateFlow(SortType.DATE_ADDED_DESC)
     val sortType: StateFlow<SortType> = _sortType
@@ -74,12 +81,58 @@ class ShoppingViewModel(
         }
     }
 
-    fun saveList(
+    fun initializeList(
+        id: Long,
         mode: EditMode,
-        itemsInput: List<IngredientInput>
+        list: ListWithItems?
+    ) {
+        if (id != listId) initialized = false
+        if (initialized) return
+
+        when (mode) {
+            EditMode.ADD -> {
+                clearListForm()
+            }
+
+            EditMode.EDIT -> {
+                if (list == null) return
+
+                if (list.shoppingList.id == 0L) return
+
+                listId = list.shoppingList.id
+                listNameState = list.shoppingList.name
+                listCreatedState = list.shoppingList.createdAt
+
+                ingredients.clear()
+                ingredients.addAll(
+                    list.shoppingItems.map {
+                        IngredientInput(
+                            name = it.name,
+                            quantity =  it.quantity,
+                            unit = it.unit
+                        )
+                    }
+                )
+                isListLoading = false
+            }
+        }
+        initialized = true
+    }
+
+    private fun clearListForm() {
+        listId = 0L
+        listNameState = ""
+        listCreatedState = 0L
+        ingredients.clear()
+        isListLoading = true
+        initialized = false
+    }
+
+    fun saveList(
+        mode: EditMode
     ) {
         viewModelScope.launch {
-            if (itemsInput.isEmpty()) {
+            if (ingredients.isEmpty()) {
                 _events.emit(ShoppingListEvent.ShowSnackbar(R.string.warning_empty_fields))
                 return@launch
             }
@@ -92,7 +145,7 @@ class ShoppingViewModel(
                         createdAt = listCreatedState,
                         lastEdited = System.currentTimeMillis()
                     ),
-                    itemsInput = itemsInput
+                    itemsInput = ingredients.toList()
                 )
                 _events.emit(ShoppingListEvent.ShowSnackbar(R.string.list_updated))
                 _events.emit(ShoppingListEvent.NavigateBack)
@@ -101,7 +154,7 @@ class ShoppingViewModel(
                     list = ShoppingList(
                         name = if (listNameState.isEmpty()) formatDate(System.currentTimeMillis()) else listNameState.trim(),
                     ),
-                    itemsInput = itemsInput
+                    itemsInput = ingredients.toList()
                 )
                 _events.emit(ShoppingListEvent.ShowSnackbar(R.string.list_added))
                 _events.emit(ShoppingListEvent.NavigateBack)
@@ -157,6 +210,38 @@ class ShoppingViewModel(
 
     fun onListNameChange(newString: String) {
         listNameState = newString
+    }
+
+    fun saveIngredient(ingredient: IngredientInput) {
+        when (ingredientDialogState.mode) {
+            EditMode.ADD -> {
+                ingredients.add(ingredient)
+            }
+
+            EditMode.EDIT -> {
+                ingredients[ingredientDialogState.editIndex] = ingredient
+            }
+        }
+        closeIngredientDialog()
+    }
+
+    fun openIngredientDialog(index: Int = -1) {
+        ingredientDialogState = if (index != -1) {
+            IngredientDialogUiState(
+                isVisible = true,
+                mode = EditMode.EDIT,
+                editIndex = index
+            )
+        } else {
+            IngredientDialogUiState(
+                isVisible = true,
+                mode = EditMode.ADD
+            )
+        }
+    }
+
+    fun closeIngredientDialog() {
+        ingredientDialogState = ingredientDialogState.copy(isVisible = false)
     }
 }
 

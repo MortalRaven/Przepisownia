@@ -13,12 +13,12 @@
     <string name="ingredients_list">Lista składników</string>
     <string name="edit_ingredient">Edytuj składnik</string>
     <string name="remove_ingredient">Usuń składnik</string>
-    <string name="new_ingredient">Nowy składnik</string>
+    <string name="new_ingredient">+ Nowy składnik</string>
     <string name="recipe_instructions">Przygotowanie</string>
     <string name="recipe_step">Krok</string>
     <string name="edit_step">Edytuj krok</string>
     <string name="remove_step">Usuń krok</string>
-    <string name="new_step">Nowy krok</string>
+    <string name="new_step">+ Nowy krok</string>
     <string name="recipe_updated">Przepis został zaktualizowany.</string>
     <string name="recipe_added">Przepis został dodany.</string>
     <string name="warning_empty_fields">Wypełnij wszystkie wymagane pola.</string>

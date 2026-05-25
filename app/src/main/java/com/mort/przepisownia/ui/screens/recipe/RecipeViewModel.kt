@@ -160,6 +160,7 @@ class RecipeViewModel(
         when (mode) {
             EditMode.ADD -> {
                 clearRecipeForm()
+                isRecipeLoading = false
             }
 
             EditMode.EDIT -> {
@@ -210,14 +211,12 @@ class RecipeViewModel(
         recipeLastViewed = null
         ingredients.clear()
         steps.clear()
-        isRecipeLoading = false
+        isRecipeLoading = true
         initialized = false
     }
 
     fun saveRecipe(
-        mode: EditMode,
-        ingredients: List<IngredientInput>,
-        steps: List<String>,
+        mode: EditMode
     ) {
         viewModelScope.launch {
             if (nameIsEmpty || linkHasErrors) {
@@ -237,8 +236,8 @@ class RecipeViewModel(
                         createdAt = recipeCreatedAt,
                         lastViewedAt = recipeLastViewed
                     ),
-                    ingredients = ingredients,
-                    steps = steps
+                    ingredients = ingredients.toList(),
+                    steps = steps.toList()
                 )
                 _events.emit(RecipeEvent.ShowSnackbar(R.string.recipe_updated))
                 _events.emit(RecipeEvent.NavigateBack)
@@ -251,8 +250,8 @@ class RecipeViewModel(
                         imagePath = recipeImageState,
                         link = recipeLinkState.trim()
                     ),
-                    ingredients = ingredients,
-                    steps = steps
+                    ingredients = ingredients.toList(),
+                    steps = steps.toList()
                 )
                 _events.emit(RecipeEvent.ShowSnackbar(R.string.recipe_added))
                 _events.emit(RecipeEvent.NavigateBack)

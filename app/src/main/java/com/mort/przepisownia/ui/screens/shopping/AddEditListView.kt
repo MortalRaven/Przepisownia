@@ -23,11 +23,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,8 +41,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.mort.przepisownia.R
 import com.mort.przepisownia.data.entities.IngredientInput
-import com.mort.przepisownia.data.entities.ListWithItems
-import com.mort.przepisownia.data.entities.ShoppingList
 import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.ui.common.AppBarView
 import com.mort.przepisownia.ui.common.EditMode
@@ -63,52 +58,26 @@ fun AddEditListScreen(
 ) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
-
     val focusManager = LocalFocusManager.current
 
-    val ingredients = remember { mutableStateListOf<IngredientInput>() }
+    val fullList = viewModel.getListItems(id).collectAsState(initial = null).value
 
-    val fullList = viewModel.getListItems(id).collectAsState(
-        initial = ListWithItems(
-            shoppingList = ShoppingList(0L, "", 0L, null),
-            shoppingItems = listOf()
-        )
-    ).value
-
-    val initialized = remember { mutableStateOf(false) }
-
+    //Wczytywanie listy
     LaunchedEffect(mode, fullList) {
-        if (!initialized.value) {
-            when (mode) {
-                EditMode.ADD -> {
-                    viewModel.listNameState = ""
-                }
-                EditMode.EDIT -> {
-                    if (fullList.shoppingList.id == 0L) {
-                        return@LaunchedEffect
-                    } else {
-                        viewModel.listId = fullList.shoppingList.id
-                        viewModel.listNameState = fullList.shoppingList.name
-                        viewModel.listCreatedState = fullList.shoppingList.createdAt
-
-                        ingredients.clear()
-                        ingredients.addAll(fullList.shoppingItems.map {
-                            IngredientInput(name = it.name, quantity = it.quantity, unit = it.unit)
-                        })
-
-                        viewModel.isListLoading = false
-                    }
-                }
-            }
-            initialized.value = true
+        if (mode == EditMode.EDIT && fullList == null) {
+            return@LaunchedEffect
         }
+        viewModel.initializeList(id, mode, fullList)
     }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect {event ->
             when (event) {
                 is ShoppingListEvent.ShowSnackbar -> {
-                    snackbarHostState.showSnackbar(message = context.getString(event.message), duration = SnackbarDuration.Short)
+                    snackbarHostState.showSnackbar(
+                        message = context.getString(event.message),
+                        duration = SnackbarDuration.Short
+                    )
                 }
                 is ShoppingListEvent.NavigateBack -> {
                     navController.navigate(Screen.ShoppingScreen.route)
@@ -117,32 +86,17 @@ fun AddEditListScreen(
         }
     }
 
-    DisposableEffect(Unit) {
-        onDispose {
-            viewModel.isListLoading = true
-        }
-    }
-
-    val showIngredientEditDialog = remember { mutableStateOf(false) }
-    val ingredientDialogMode = remember { mutableStateOf(EditMode.ADD) }
-    val ingredientToEditIndex = remember { mutableStateOf(-1) }
-
-    if (showIngredientEditDialog.value) {
-        val ingredient = when (ingredientDialogMode.value) {
+    if (viewModel.ingredientDialogState.isVisible) {
+        val ingredient = when (viewModel.ingredientDialogState.mode) {
             EditMode.ADD -> IngredientInput()
-            EditMode.EDIT -> ingredients[ingredientToEditIndex.value]
+            EditMode.EDIT -> viewModel.ingredients[viewModel.ingredientDialogState.editIndex]
         }
 
         IngredientDialog(
             ingredient = ingredient,
-            onDismiss = { showIngredientEditDialog.value = false },
+            onDismiss = { viewModel.closeIngredientDialog() },
             onConfirm = { updated ->
-                if (ingredientDialogMode.value == EditMode.ADD) {
-                    ingredients.add(updated)
-                } else {
-                    ingredients[ingredientToEditIndex.value] = updated
-                }
-                showIngredientEditDialog.value = false
+                viewModel.saveIngredient(updated)
             }
         )
     }
@@ -157,8 +111,7 @@ fun AddEditListScreen(
                 acceptable = true,
                 onAcceptClick = {
                     viewModel.saveList(
-                        mode = mode,
-                        itemsInput = ingredients.toList()
+                        mode = mode
                     )
                 }
             )
@@ -169,8 +122,7 @@ fun AddEditListScreen(
                 shape = CircleShape,
                 onClick = {
                     focusManager.clearFocus()
-                    ingredientDialogMode.value = EditMode.ADD
-                    showIngredientEditDialog.value = !showIngredientEditDialog.value
+                    viewModel.openIngredientDialog()
                 }
             ) {
                 Icon(painter = painterResource(R.drawable.baseline_add_24), contentDescription = "")
@@ -202,7 +154,7 @@ fun AddEditListScreen(
                 )
             }
 
-            if (ingredients.isEmpty()) {
+            if (viewModel.ingredients.isEmpty()) {
                 item {
                     Column(
                         modifier = Modifier.fillMaxSize(),
@@ -223,7 +175,7 @@ fun AddEditListScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    ingredients.forEachIndexed { index, item ->
+                    viewModel.ingredients.forEachIndexed { index, item ->
                         Row(
                             modifier = Modifier.padding(start = 16.dp, end = 8.dp).defaultMinSize(30.dp),
                             verticalAlignment = Alignment.CenterVertically,
@@ -231,10 +183,7 @@ fun AddEditListScreen(
                         ) {
                             Row(
                                 modifier = Modifier.weight(1f).clickable {
-                                    ingredientDialogMode.value = EditMode.EDIT
-                                    ingredientToEditIndex.value = index
-                                    showIngredientEditDialog.value =
-                                        !showIngredientEditDialog.value
+                                    viewModel.openIngredientDialog(index)
                                 },
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -259,7 +208,7 @@ fun AddEditListScreen(
                                 modifier = Modifier.weight(0.2f)
                             ) {
                                 IconButton(onClick = {
-                                    ingredients.removeAt(index)
+                                    viewModel.ingredients.removeAt(index)
                                 }) {
                                     Icon(
                                         painter = painterResource(R.drawable.baseline_clear_24),
