@@ -16,6 +16,9 @@ import com.mort.przepisownia.ui.screens.recipe.RecipeDetailsView
 import com.mort.przepisownia.ui.screens.recipe.RecipeListView
 import com.mort.przepisownia.ui.screens.recipe.RecipeViewModel
 import com.mort.przepisownia.ui.screens.recipe.RecipeViewModelFactory
+import com.mort.przepisownia.ui.screens.settings.SettingsView
+import com.mort.przepisownia.ui.screens.settings.SettingsViewModel
+import com.mort.przepisownia.ui.screens.settings.SettingsViewModelFactory
 import com.mort.przepisownia.ui.screens.shopping.AddEditListScreen
 import com.mort.przepisownia.ui.screens.shopping.ShoppingDetailsView
 import com.mort.przepisownia.ui.screens.shopping.ShoppingListView
@@ -25,6 +28,7 @@ import com.mort.przepisownia.ui.screens.shopping.ShoppingViewModel
 fun Navigation(
     recipeViewModel: RecipeViewModel = viewModel(factory = RecipeViewModelFactory(LocalContext.current.applicationContext)),
     listViewModel: ShoppingViewModel = viewModel(),
+    settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModelFactory(LocalContext.current.applicationContext)),
     navController: NavHostController = rememberNavController()
 ) {
     NavHost(
@@ -115,6 +119,10 @@ fun Navigation(
                 navController = navController,
                 viewModel = listViewModel
             )
+        }
+
+        composable(Screen.SettingsScreen.route) {
+            SettingsView(navController, settingsViewModel)
         }
     }
 }

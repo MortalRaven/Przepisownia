@@ -6,40 +6,26 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.mort.przepisownia.data.preferences.DataStore
+import com.mort.przepisownia.data.repository.SettingsRepository
 import com.mort.przepisownia.navigation.Navigation
 import com.mort.przepisownia.ui.theme.PrzepisowniaTheme
+
+
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val settingsRepo = SettingsRepository(dataStore = DataStore(applicationContext))
         //enableEdgeToEdge()
         setContent {
-            PrzepisowniaTheme(dynamicColor = false) {
+            PrzepisowniaTheme(themeRepo = settingsRepo, dynamicColor = false) {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
                     Navigation()
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PrzepisowniaTheme {
-        Greeting("Android")
     }
 }

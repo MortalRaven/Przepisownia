@@ -101,13 +101,19 @@
     </plurals>
 
     <string name="unit_ounce_weight_fraction">oz</string>
+    <plurals name="unit_ounce_weight">
+        <item quantity="one">oz</item>
+        <item quantity="other">oz</item>
+    </plurals>
+
     <string name="leave">Leave</string>
     <string name="unsaved_changes">Unsaved changes</string>
     <string name="unsaved_changes_desc">You have some unsaved changes. Do you really want to leave?</string>
     <string name="favourite">Favourite</string>
     <string name="sort_by">Sort by</string>
-    <plurals name="unit_ounce_weight">
-        <item quantity="one">oz</item>
-        <item quantity="other">oz</item>
-    </plurals>
+    <string name="chooseTheme">Choose theme</string>
+    <string name="app_theme_system">System default</string>
+    <string name="app_theme_dark">Dark</string>
+    <string name="app_theme_light">Light</string>
+    <string name="app_language">App language</string>
 </resources>

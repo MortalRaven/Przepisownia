@@ -15,7 +15,7 @@ import com.mort.przepisownia.data.Graph
 import com.mort.przepisownia.data.entities.IngredientInput
 import com.mort.przepisownia.data.entities.Recipe
 import com.mort.przepisownia.data.entities.RecipeWithDetails
-import com.mort.przepisownia.data.preferences.PreferencesManager
+import com.mort.przepisownia.data.preferences.DataStore
 import com.mort.przepisownia.data.repository.RecipeRepository
 import com.mort.przepisownia.ui.common.EditMode
 import com.mort.przepisownia.ui.common.ViewType
@@ -37,7 +37,7 @@ import kotlinx.coroutines.launch
 
 class RecipeViewModel(
     private val recipeRepository: RecipeRepository = Graph.recipeRepository,
-    private val preferencesManager: PreferencesManager,
+    private val dataStore: DataStore,
 ) : ViewModel() {
 
     private val _recipesLayout = MutableStateFlow(ViewType.GRID)
@@ -130,7 +130,7 @@ class RecipeViewModel(
 
     init {
         viewModelScope.launch {
-            preferencesManager.recipesLayout.collect { layout ->
+            dataStore.recipesLayout.collect { layout ->
                 val layoutEnum = try {
                     layout
                 } catch (e: Exception) {
@@ -330,7 +330,7 @@ class RecipeViewModel(
     fun setRecipesLayout(viewType: ViewType) {
         _recipesLayout.value = viewType
         viewModelScope.launch {
-            preferencesManager.setRecipesLayout(viewType)
+            dataStore.setRecipesLayout(viewType)
         }
     }
 
@@ -416,7 +416,8 @@ class RecipeViewModelFactory(
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         val recipeRepository = Graph.recipeRepository
-        val preferencesManager = PreferencesManager(context)
-        return RecipeViewModel(recipeRepository, preferencesManager) as T
+        val dataStore = DataStore(context)
+        @Suppress("UNCHECKED_CAST")
+        return RecipeViewModel(recipeRepository, dataStore) as T
     }
 }

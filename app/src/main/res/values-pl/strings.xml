@@ -121,4 +121,9 @@
     <string name="unsaved_changes_desc">Posiadasz niezapisane zmiany. Czy na pewno chcesz wyjść?</string>
     <string name="favourite">Ulubione</string>
     <string name="sort_by">Sortuj według</string>
+    <string name="chooseTheme">Wybierz motyw</string>
+    <string name="app_theme_system">Domyślny systemowy</string>
+    <string name="app_theme_dark">Ciemny</string>
+    <string name="app_theme_light">Jasny</string>
+    <string name="app_language">Język aplikacji</string>
 </resources>

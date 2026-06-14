@@ -111,6 +111,6 @@ object MenuList {
         MenuItem(R.string.add_recipe, R.drawable.baseline_add_24, Screen.AddEditScreen),
         MenuItem(R.string.recipe_list, R.drawable.outline_menu_book_24, Screen.RecipesScreen),
         MenuItem(R.string.shopping_lists, R.drawable.outline_shopping_cart_24, Screen.ShoppingScreen),
-        MenuItem(R.string.settings, R.drawable.outline_settings_24, Screen.RecipesScreen)
+        MenuItem(R.string.settings, R.drawable.outline_settings_24, Screen.SettingsScreen)
     )
 }
