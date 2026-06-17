@@ -22,18 +22,21 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.mort.przepisownia.R
 
+data class Choice<V>(val value: V, val displayValue: Int)
+
 @Composable
 fun <V> PreferencesList(
-    choices: List<V>,
+    title: Int,
+    choices: List<Choice<out V>>,
     selected: V,
-    onSelect: ((V) -> Unit)? = null,
+    onSelect: (V) -> Unit,
     onDismiss: () -> Unit,
     onConfirm: (() -> Unit)
 ) {
     val (selectedOption, onOptionSelected) = remember(selected) { mutableStateOf(selected) }
 
     AlertDialog(
-        title = { Text(stringResource(R.string.chooseTheme)) },
+        title = { Text(stringResource(title)) },
         text = {
             Column(Modifier.selectableGroup()) {
                 choices.forEach { choice ->
@@ -42,10 +45,10 @@ fun <V> PreferencesList(
                             .fillMaxWidth()
                             .height(56.dp)
                             .selectable(
-                                selected = (choice == selectedOption),
+                                selected = (choice.value == selectedOption),
                                 onClick = {
-                                    onOptionSelected(choice)
-                                    onSelect?.invoke(choice)
+                                    onOptionSelected(choice.value)
+                                    onSelect.invoke(choice.value)
                                 },
                                 role = Role.RadioButton
                             )
@@ -53,11 +56,11 @@ fun <V> PreferencesList(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
-                            selected = (choice == selectedOption),
+                            selected = (choice.value == selectedOption),
                             onClick = null
                         )
                         Text(
-                            text = choice.toString(),
+                            text = stringResource(choice.displayValue),
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.padding(start = 16.dp)
                         )

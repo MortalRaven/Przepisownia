@@ -2,18 +2,19 @@ package com.mort.przepisownia.ui.screens.settings.components
 
 import androidx.compose.runtime.Composable
 import com.mort.przepisownia.R
-import com.mort.przepisownia.model.AppThemeMode
+import com.mort.przepisownia.model.AppLanguage
 
 @Composable
-fun ThemeDialog(
-    selected: AppThemeMode,
-    onSelect: (AppThemeMode) -> Unit,
+fun LangDialog(
+    selected: AppLanguage,
+    onSelect: (AppLanguage) -> Unit,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val choices = AppThemeMode.entries.map { Choice(it, it.label) }
+    val choices = AppLanguage.entries.map { Choice(it, it.label) }
+
     PreferencesList(
-        title = R.string.chooseTheme,
+        title = R.string.app_language,
         choices = choices,
         selected = selected,
         onSelect = onSelect,

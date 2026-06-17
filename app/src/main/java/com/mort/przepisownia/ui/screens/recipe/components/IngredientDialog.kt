@@ -28,7 +28,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.mort.przepisownia.R
 import com.mort.przepisownia.data.entities.IngredientInput
-import com.mort.przepisownia.ui.common.EditMode
+import com.mort.przepisownia.model.EditMode
 import com.mort.przepisownia.utils.UnitType
 import com.mort.przepisownia.utils.displayName
 

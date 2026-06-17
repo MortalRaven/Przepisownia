@@ -14,7 +14,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import com.mort.przepisownia.R
-import com.mort.przepisownia.ui.common.EditMode
+import com.mort.przepisownia.model.EditMode
 
 data class StepDialogUiState(
     val isVisible: Boolean = false,

@@ -20,14 +20,27 @@ import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.ui.common.AppBarView
 import com.mort.przepisownia.ui.screens.settings.components.PreferenceItem
 import com.mort.przepisownia.ui.screens.settings.components.ThemeDialog
-import com.mort.przepisownia.utils.displayName
+import com.mort.przepisownia.ui.screens.settings.components.LangDialog
 
 @Composable
 fun SettingsView(
     navController: NavController,
-    viewModel: SettingsViewModel
+    viewModel: SettingsViewModel,
 ) {
     val appTheme by viewModel.appTheme.collectAsState()
+    val appLang by viewModel.appLanguage.collectAsState()
+
+    if (viewModel.appLangDialogState) {
+        LangDialog(
+            selected = appLang,
+            onSelect = { viewModel.appLangTemp = it },
+            onConfirm = {
+                viewModel.onAppLanguageChanged(viewModel.appLangTemp)
+                viewModel.closeAppLangDialog()
+            },
+            onDismiss = viewModel::closeAppLangDialog
+        )
+    }
 
     if (viewModel.appThemeDialogState) {
         ThemeDialog(
@@ -58,9 +71,17 @@ fun SettingsView(
             item {
                 PreferenceItem(
                     modifier = Modifier,
-                    title = { Text(stringResource(R.string.chooseTheme))},
-                    description = { Text(appTheme.displayName())},
-                    onClick = { viewModel.openAppThemeDialog() }
+                    title = { Text(stringResource(R.string.app_language)) },
+                    description = { Text(stringResource(appLang.label)) },
+                    onClick = viewModel::openAppLangDialog
+                )
+            }
+            item {
+                PreferenceItem(
+                    modifier = Modifier,
+                    title = { Text(stringResource(R.string.chooseTheme)) },
+                    description = { Text(stringResource(appTheme.label)) },
+                    onClick = viewModel::openAppThemeDialog
                 )
             }
         }

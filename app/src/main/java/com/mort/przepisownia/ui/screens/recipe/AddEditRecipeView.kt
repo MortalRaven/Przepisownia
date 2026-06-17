@@ -51,12 +51,12 @@ import com.mort.przepisownia.R
 import com.mort.przepisownia.data.entities.IngredientInput
 import com.mort.przepisownia.navigation.Screen
 import com.mort.przepisownia.ui.common.AppBarView
-import com.mort.przepisownia.ui.common.EditMode
+import com.mort.przepisownia.model.EditMode
 import com.mort.przepisownia.ui.common.LoadingOverlay
-import com.mort.przepisownia.utils.displayName
 import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialog
 import com.mort.przepisownia.ui.screens.recipe.components.RecipeTextField
 import com.mort.przepisownia.ui.screens.recipe.components.StepDialog
+import com.mort.przepisownia.utils.displayName
 import com.mort.przepisownia.utils.inTextFormatter
 import com.mort.przepisownia.utils.saveImageToInternalStorage
 import java.io.File

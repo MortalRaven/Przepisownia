@@ -55,7 +55,7 @@ import com.mort.przepisownia.ui.common.AppBarView
 import com.mort.przepisownia.ui.common.BlockOverlay
 import com.mort.przepisownia.ui.common.EmptyScreen
 import com.mort.przepisownia.ui.common.LoadingOverlay
-import com.mort.przepisownia.ui.common.ViewType
+import com.mort.przepisownia.model.ViewType
 import com.mort.przepisownia.ui.screens.recipe.components.FilterDrawer
 import com.mort.przepisownia.ui.screens.recipe.components.RecipeGridItem
 import com.mort.przepisownia.ui.screens.recipe.components.RecipeListItem

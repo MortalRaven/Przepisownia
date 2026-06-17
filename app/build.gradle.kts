@@ -57,6 +57,7 @@ dependencies {
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.appcompat)
     kapt(libs.androidx.room.compiler)
 
     implementation(libs.coil.compose)

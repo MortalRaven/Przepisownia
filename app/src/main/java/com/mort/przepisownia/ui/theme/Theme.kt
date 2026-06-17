@@ -7,7 +7,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.mort.przepisownia.utils.AppThemeMode
+import com.mort.przepisownia.model.AppThemeMode
 import com.mort.przepisownia.data.repository.SettingsRepository
 
 private val DarkColorScheme = darkColorScheme(

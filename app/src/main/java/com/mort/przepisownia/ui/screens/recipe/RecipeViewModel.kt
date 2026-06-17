@@ -17,8 +17,8 @@ import com.mort.przepisownia.data.entities.Recipe
 import com.mort.przepisownia.data.entities.RecipeWithDetails
 import com.mort.przepisownia.data.preferences.DataStore
 import com.mort.przepisownia.data.repository.RecipeRepository
-import com.mort.przepisownia.ui.common.EditMode
-import com.mort.przepisownia.ui.common.ViewType
+import com.mort.przepisownia.model.EditMode
+import com.mort.przepisownia.model.ViewType
 import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialogUiState
 import com.mort.przepisownia.ui.screens.recipe.components.SortType
 import com.mort.przepisownia.ui.screens.recipe.components.StepDialogUiState

@@ -4,8 +4,9 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.mort.przepisownia.ui.common.ViewType
-import com.mort.przepisownia.utils.AppThemeMode
+import com.mort.przepisownia.model.AppLanguage
+import com.mort.przepisownia.model.ViewType
+import com.mort.przepisownia.model.AppThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -17,6 +18,7 @@ class DataStore(private val context: Context) {
     private object PreferencesKeys {
         val RECIPE_LAYOUT_KEY = stringPreferencesKey("recipe_layout")
         val APP_THEME = stringPreferencesKey("app_theme")
+        val APP_LANGUAGE = stringPreferencesKey("app_language")
     }
 
     val recipesLayout: Flow<ViewType> = context.dataStore.data.map { preferences ->
@@ -38,6 +40,17 @@ class DataStore(private val context: Context) {
     suspend fun setAppTheme(appTheme: AppThemeMode) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.APP_THEME] = appTheme.name
+        }
+    }
+
+    val appLangFlow: Flow<AppLanguage> = context.dataStore.data.map { preferences ->
+        val value = preferences[PreferencesKeys.APP_LANGUAGE] ?: AppLanguage.SYSTEM.name
+        AppLanguage.valueOf(value)
+    }
+
+    suspend fun setAppLanguage(appLang: AppLanguage) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.APP_LANGUAGE] = appLang.name
         }
     }
 }

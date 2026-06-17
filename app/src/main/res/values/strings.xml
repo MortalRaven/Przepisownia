@@ -112,8 +112,10 @@
     <string name="favourite">Favourite</string>
     <string name="sort_by">Sort by</string>
     <string name="chooseTheme">Choose theme</string>
-    <string name="app_theme_system">System default</string>
+    <string name="system_default">System default</string>
     <string name="app_theme_dark">Dark</string>
     <string name="app_theme_light">Light</string>
     <string name="app_language">App language</string>
+    <string name="polish" translatable="false">Polski</string>
+    <string name="english" translatable="false">English</string>
 </resources>

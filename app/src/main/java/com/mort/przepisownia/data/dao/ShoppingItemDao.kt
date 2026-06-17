@@ -6,7 +6,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.mort.przepisownia.data.entities.Recipe
 import com.mort.przepisownia.data.entities.ShoppingItem
 import kotlinx.coroutines.flow.Flow
 

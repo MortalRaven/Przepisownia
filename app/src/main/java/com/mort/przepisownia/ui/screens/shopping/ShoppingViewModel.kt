@@ -13,7 +13,7 @@ import com.mort.przepisownia.data.entities.IngredientInput
 import com.mort.przepisownia.data.entities.ListWithItems
 import com.mort.przepisownia.data.entities.ShoppingList
 import com.mort.przepisownia.data.repository.ShoppingRepository
-import com.mort.przepisownia.ui.common.EditMode
+import com.mort.przepisownia.model.EditMode
 import com.mort.przepisownia.ui.screens.recipe.components.IngredientDialogUiState
 import com.mort.przepisownia.ui.screens.recipe.components.SortType
 import com.mort.przepisownia.utils.formatDate
